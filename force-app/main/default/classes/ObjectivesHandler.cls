@@ -28,7 +28,7 @@ public with sharing class ObjectivesHandler
     }
     @AuraEnabled(cacheable=true)
     public static List<Objective__c> getObjectivities(){
-        return [SELECT Id, Name ,(SELECT Id,Name FROM Key_Results__r) FROM Objective__c];
+        return [SELECT Id, Name ,(SELECT Id,Name,Progress__c FROM Key_Results__r) FROM Objective__c];
     }
      
 }

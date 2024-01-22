@@ -3,24 +3,24 @@ import getKeyResults from '@salesforce/apex/KeyResultHandler.getKeyResults';
 
 export default class KeyResultList extends LightningElement 
 {
-    @api objectivityId
-    @track keyResults = [];
-    error;
-    // refresh(){
-    //     this.loadRelatedKeyResults();
-    // }
+    @api keyResultId;
+    @track keyResults;
+    @track letRender = false;
     connectedCallback(){
-        this.loadRelatedKeyResults();
-        // this.dispatchEvent(new CustomEvent('customevent',{detail: this.keyResults}));
-        // customElements.define('key-result-list', KeyResultList);
+        console.log('refs')
+       console.log(this.refs);
+       this.loadKeyresults();
     }
-    loadRelatedKeyResults()
-    {
-        getKeyResults({objectivityId: this.objectivityId })
-        .then(result=>{
-            this.keyResults = result 
-        })
-        .catch(error=>{})
+    async loadKeyresults(){
+        try{
+        this.keyResults = await getKeyResults({keyResultId: this.keyResultId});
+        console.log('load')
+        console.log(JSON.stringify(this.keyResults))
+        //this.letRender =true;
+        }
+        catch(error){
+            console.log(error)
+        }
+        this.dispatchEvent(new CustomEvent('letRender',{detail: this.letRender}));
     }
-    
 }

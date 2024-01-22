@@ -1,18 +1,13 @@
 <template>
-    <div class="slds-card__body slds-card__body_inner">
-        <template for:each={keyResults} for:item="keyResult">
-            <div class="slds-form-element slds-box slds-box_xx-small" style="display: flex; flex: 1;" key={keyResult.Id}>
-                <div class="card">
-                    <lightning-card title={keyResult.Name}>
-                        <p>{keyResult.Progress__c}</p>
-                    </lightning-card>
-                </div>
-            </div>
-        </template>
-        <template if:true={error}>
-            <div class="slds-text-color_error">
-                An error occurred while loading the bear list
-            </div>
+    <div lwc:ref="KeyResultId">
+        <template for:each={keyResults} for:item="keyresult">
+            <ul key={keyresult.Id} class="slds-form-element slds-box slds-box_xx-small">
+                <li style="flex: 1;">{keyresult.Name}</li>
+                <li>Progress: {keyresult.Progress__c} </li>
+                <template for:each={keyresult.Opportunities__r} for:item="opp">
+                    <li key={opp.Id}>Opportunity: {opp.Name}</li>
+                </template>  
+            </ul>
         </template>
     </div>
 </template>

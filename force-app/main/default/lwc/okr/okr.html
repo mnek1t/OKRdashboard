@@ -32,9 +32,10 @@
                         <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-2">
                             <lightning-input label="Objectivity Name" lwc:ref="keyResultName"></lightning-input>
                             <lightning-combobox label="Objectivity" value={Name} options={objectivityOptions} lwc:ref="objectivityId"></lightning-combobox>
+                            <!-- <lightning-combobox label="Progress" value={Name} options={objectivityOptions} lwc:ref="objectivityId"></lightning-combobox> -->
                             <p>Track key result with fields:</p>
                             <div class="slds-form-element" style="columns: 2;">
-                                <lightning-checkbox-group name="Checkbox Group" options={relatedFieldsOptions} value={checkBoxValue} onchange={handleSelectedOption} ></lightning-checkbox-group>
+                                <lightning-checkbox-group name="Checkbox Group" options={relatedFieldsOptions} value={trackFields} onchange={handleSelectedOption} lwc:ref="trackFields"></lightning-checkbox-group>
                             </div>
                         </div>
                         <footer class="slds-modal__footer">

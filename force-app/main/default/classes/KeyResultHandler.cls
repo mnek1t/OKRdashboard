@@ -1,17 +1,24 @@
 public with sharing class KeyResultHandler {
     @AuraEnabled
-    public static KeyResult__c createKeyResult(String keyResultName, Id objectivityId){
+    public static KeyResult__c createKeyResult(String keyResultName, Id objectivityId, List<String> trackfields){
         //Objective__c lookUp = [SELECT Id FROM Objective__c WHERE Id=:objectivityId LIMIT 1];
+        Map<String, Schema.SObjectField> fieldMap = Schema.SObjectType.KeyResult__c.fields.getMap();
+        
         KeyResult__c keyResult = new KeyResult__c(
             Name = keyResultName,
             Objectivity__c = objectivityId
         );
+        for (String relatedField : trackfields) {
+            if(fieldMap.containsKey(relatedField)){
+                keyResult.put(relatedField,relatedField);
+            }
+        }
         insert keyResult;
         return keyResult;
     }
     @AuraEnabled
-    public static List<KeyResult__c> getKeyResults(Id objectivityId){
-        return [SELECT Name FROM KeyResult__c WHERE Objectivity__c =:objectivityId];
+    public static List<KeyResult__c> getKeyResults(Id keyResultId){
+        return [SELECT Name, Progress__c,(SELECT Name FROM Opportunities__r) FROM KeyResult__c WHERE Id =:keyResultId];
     }
     // @AuraEnabled
     // public static List<Map<String, String>> getRelatedFieldsOptions(){

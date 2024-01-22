@@ -3,6 +3,7 @@ import { LightningElement,track,wire,api } from 'lwc';
 import createObjective from '@salesforce/apex/ObjectivesHandler.createObjective';
 import createKeyResult from '@salesforce/apex/KeyResultHandler.createKeyResult';
 import getObjectivitiesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptions';
+// import getKeyResults from '@salesforce/apex/ObjectivesHandler.getKeyResults'
 
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 import USER_ID from '@salesforce/user/Id';
@@ -10,48 +11,35 @@ import USER_ID from '@salesforce/user/Id';
 export default class Okr extends LightningElement 
 { 
     @api userOptions = []; //all users in org
+    @api isRefresh = false;
     @track formData= {}
     @track relatedFieldsOptions = [];
     @track objectivityOptions = [];
+    @track progressOptions = []
     @track isAddingObjectivity = false;
     @track isAddingKeyResult = false;
     @track assignedUserObjectivities = USER_ID;
     @track objectivityYear = new Date().getFullYear();
-    @track checkBoxValue = ['Opportunity'];
+
+    @track trackFields = [];
     //automatically called function
     connectedCallback() {
         this.loadOptions();
     }
-    
     //retrieve all active users in the org
     async loadOptions(){
         try{
         let result = await getObjectivitiesOptions();
         this.objectivityOptions = result;
+        // this.progressOptions = await getKeyResults();
         }
         catch(error){
             console.log('Erorr')
             console.log(error.message)
         }
         let relatedFields = ['Opportunity', 'Google Review', 'Review', 'Case Study', 'Act', 'Survey', 'Call','Event', 'Leads']
-
         this.relatedFieldsOptions = relatedFields.map(field=>({ label: field, value: field }));
-        //console.log('2relatedFieldsOptions', this.relatedFieldsOptions)
     }
-    // @wire(getObjectivitiesOptions)
-    // wiredObjectivitieOptions({error,data}){
-    //     if(data){
-    //         this.objectivityOptions = [...data];
-    //         console.log(this.objectivityOptions)
-    //     }
-    //     else if(error){
-    //         console.log('WIRED' + error)
-    //     }
-    // }  
-    // handleSelectedOption(event){
-    //     this.value = event.detail.value;
-    //     console.log(this.value)
-    // }
     handleOpening(event){
         if(event.target.value == 'close'){
             this.isAddingObjectivity = false; 
@@ -65,18 +53,24 @@ export default class Okr extends LightningElement
         }
     }
     //record data
+    handleSelectedOption(event){
+        this.value = event.detail.value;
+        this.trackFields = event.detail.value;
+        console.log(this.value)
+        console.log(this.trackFields)
+    }
     async handleSubmit(event){
-        console.log('event', event)
         for(let prop in this.refs){
              this.formData[prop] = this.refs[prop].value
         }
-        console.log('1',JSON.stringify(this.formData))
         try{
             if(event.target.innerText == 'Create Key'){
                 await createKeyResult({
                     keyResultName: this.formData['keyResultName'],
                     objectivityId: this.formData['objectivityId']
                 })
+                const fetchChechedTrackedFieldsEvent = new CustomEvent('fetchTrackFields', {detail: this.value})
+                this.dispatchEvent(fetchChechedTrackedFieldsEvent);
                 this.isAddingKeyResult = false;
             }
             else{
@@ -89,7 +83,9 @@ export default class Okr extends LightningElement
                 })
                 this.isAddingObjectivity = false;  
             }
-            console.log('Record is created.');
+            console.log('Record is created')
+            // this.isRefresh = true;
+            //this.dispatchEvent(new Event('refresh'));
         }
         catch(error){
             this.dispatchEvent(

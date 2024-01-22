@@ -9,11 +9,23 @@ export default class HeaderConfiguration extends LightningElement
     @track userId = USER_ID;
     @track objectivityYear = new Date().getFullYear();
     @track assignedUserObjectivities;
+    @track user;
 
     @track userOptions= [];
     @track yearOptions= [];
     @track activityButtons = [];
     
+
+    async updateElement(){
+        try {
+            var html = await (await fetch(location.href)).text();
+            var newdoc = new DOMParser().parseFromString(html, 'text/html');
+            this.template.querySelector('c-objectivity-list');
+        } catch (error) {
+            
+        }
+    }
+
     @wire(getRecord,{recordId: '$userId',fields:[USER_NAME]})
     wiredUser({ error, data }) {
         if (data) {
@@ -60,8 +72,16 @@ export default class HeaderConfiguration extends LightningElement
     }
     switchUserObjectivities(event){
         this.userId=event.detail.value;
+        this.user = event.detail.value;
     }
     switchYearObjectivities(event){
         this.objectivityYear = event.detail.value;
     }
+    // @track trackFields = [];
+    // getTrackFields(event){
+    //     console.log('headerConfiguration')
+    //     console.log(event.detail)
+    //     this.trackFields = event.detail;
+    //     console.log(this.trackFields)
+    // }
 }
