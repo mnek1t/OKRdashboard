@@ -3,28 +3,18 @@ import { getRecord } from 'lightning/uiRecordApi';
 import USER_NAME from '@salesforce/schema/User.Name';
 import USER_ID from '@salesforce/user/Id';
 import getUsers from '@salesforce/apex/UserHandler.getUsers';
+import getObjectivitiesOptionsAccordingUser from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptionsAccordingUser';
 
 export default class HeaderConfiguration extends LightningElement 
 {
     @track userId = USER_ID;
     @track objectivityYear = new Date().getFullYear();
     @track assignedUserObjectivities;
-    @track user;
+    //@track user;
 
     @track userOptions= [];
     @track yearOptions= [];
     @track activityButtons = [];
-    
-
-    async updateElement(){
-        try {
-            var html = await (await fetch(location.href)).text();
-            var newdoc = new DOMParser().parseFromString(html, 'text/html');
-            this.template.querySelector('c-objectivity-list');
-        } catch (error) {
-            
-        }
-    }
 
     @wire(getRecord,{recordId: '$userId',fields:[USER_NAME]})
     wiredUser({ error, data }) {
@@ -46,16 +36,8 @@ export default class HeaderConfiguration extends LightningElement
         }
     }
     //retrieve all active users in the org to options for combobox
-    loadUserOptions(){
-        //console.log('1',JSON.stringify(this.userOptions))
-        //console.log('1userOptions',Object.entries(this.userOptions))
-        getUsers()
-        .then(result=>{
-            this.userOptions = result;
-            //console.log('2',JSON.stringify(this.userOptions))
-        })
-        .catch(error=>{})
-        //console.log('2userOptions', Object.entries(this.userOptions))
+    async loadUserOptions(){
+        this.userOptions = await getUsers();
     }
     //retrive all activity buttons
     loadButtons(){
@@ -68,16 +50,19 @@ export default class HeaderConfiguration extends LightningElement
     //Handlers
     provideActivity(event){
         this.action = event.detail.value;
-        //console.log(this.action)
     }
     switchUserObjectivities(event){
         this.userId=event.detail.value;
-        this.user = event.detail.value;
+        console.log('UserId from headerConfiguration', this.userId)
+        //this.getObj();
     }
     switchYearObjectivities(event){
         this.objectivityYear = event.detail.value;
     }
-    // @track trackFields = [];
+    @track objList = [];
+    async getObj(){
+        this.objList = await getObjectivitiesOptionsAccordingUser()
+    }
     // getTrackFields(event){
     //     console.log('headerConfiguration')
     //     console.log(event.detail)

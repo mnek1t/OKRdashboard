@@ -3,7 +3,6 @@ import { LightningElement,track,wire,api } from 'lwc';
 import createObjective from '@salesforce/apex/ObjectivesHandler.createObjective';
 import createKeyResult from '@salesforce/apex/KeyResultHandler.createKeyResult';
 import getObjectivitiesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptions';
-// import getKeyResults from '@salesforce/apex/ObjectivesHandler.getKeyResults'
 
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 import USER_ID from '@salesforce/user/Id';
@@ -18,7 +17,6 @@ export default class Okr extends LightningElement
     @track progressOptions = []
     @track isAddingObjectivity = false;
     @track isAddingKeyResult = false;
-    @track assignedUserObjectivities = USER_ID;
     @track objectivityYear = new Date().getFullYear();
 
     @track trackFields = [];
@@ -31,7 +29,6 @@ export default class Okr extends LightningElement
         try{
         let result = await getObjectivitiesOptions();
         this.objectivityOptions = result;
-        // this.progressOptions = await getKeyResults();
         }
         catch(error){
             console.log('Erorr')

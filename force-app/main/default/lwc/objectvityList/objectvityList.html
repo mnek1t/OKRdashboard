@@ -1,27 +1,21 @@
 <template>
-    <template for:each={objectivities} for:item="objectivity">
-        <div key={objectivity.Id} class="slds-border_top">
-            <div class="slds-form-element" style="display: flex;">
-                <div style="flex: 1; flex-wrap: wrap; display: flex;">
-                    <lightning-card title={objectivity.Name} style="flex-basis: 200px;"></lightning-card>
-                </div>
-                <div style="flex: 1; flex-wrap: wrap;">
-                    <template for:each={objectivity.Key_Results__r} for:item="keyResult">
-                        <div key={keyResult.Id} style="margin-right: 10px;">                      
-                            <c-key-result-list onletrender={letRender} key-result-id={keyResult.Id}></c-key-result-list>
-                            <!-- <div>
-                                <ul class="slds-form-element slds-box slds-box_xx-small">
-                                    <li style="flex: 1;">{keyResult.Name}</li>
-                                    <li>Progress: {keyResult.Progress__c} </li>
-                                    <template for:each={keyResult.Opportunities__r} for:item="opp">
-                                        <li key={opp.Id}>Opportunity: {opp.Name}</li>
-                                    </template>  
-                                </ul>
-                            </div> -->
-                        </div>
-                    </template>
+    <template if:true={objectivities}>
+        <template for:each={objectivities} for:item="objectivity">
+            <div key={objectivity.Id} class="slds-border_top">
+                <div class="slds-form-element" style="display: flex;">
+                    <div style="flex: 1; flex-wrap: wrap; display: flex;">
+                        <lightning-card title={objectivity.Name} style="flex-basis: 200px;"></lightning-card>
+                    </div>
+                    <div style="flex: 1; flex-wrap: wrap;">
+                        <template for:each={objectivity.Key_Results__r} for:item="keyResult">
+                            <div key={keyResult.Id} style="margin-right: 10px;">                      
+                                <c-key-result-list key-result-id={keyResult.Id}></c-key-result-list>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
     </template>
+    
 </template>

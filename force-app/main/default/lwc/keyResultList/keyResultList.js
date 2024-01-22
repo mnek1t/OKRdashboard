@@ -6,16 +6,17 @@ export default class KeyResultList extends LightningElement
     @api keyResultId;
     @track keyResults;
     @track letRender = false;
+    @track amoutOfOpportunities;
     connectedCallback(){
-        console.log('refs')
-       console.log(this.refs);
        this.loadKeyresults();
     }
     async loadKeyresults(){
         try{
         this.keyResults = await getKeyResults({keyResultId: this.keyResultId});
-        console.log('load')
-        console.log(JSON.stringify(this.keyResults))
+        //this.amoutOfOpportunities = this.keyresult.Opportunities__r;
+        //onsole.log('Opps size:' + this.keyresult.Opportunities__r)
+        // console.log('load')
+        // console.log(JSON.stringify(this.keyResults))
         //this.letRender =true;
         }
         catch(error){
