@@ -1,0 +1,18 @@
+<template>
+    <div class="slds-card__body slds-card__body_inner">
+        <template for:each={keyResults} for:item="keyResult">
+            <div class="slds-form-element slds-box slds-box_xx-small" style="display: flex; flex: 1;" key={keyResult.Id}>
+                <div class="card">
+                    <lightning-card title={keyResult.Name}>
+                        <p>{keyResult.Progress__c}</p>
+                    </lightning-card>
+                </div>
+            </div>
+        </template>
+        <template if:true={error}>
+            <div class="slds-text-color_error">
+                An error occurred while loading the bear list
+            </div>
+        </template>
+    </div>
+</template>

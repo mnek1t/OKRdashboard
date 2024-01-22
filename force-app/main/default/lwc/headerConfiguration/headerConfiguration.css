@@ -1,0 +1,19 @@
+.container{
+    padding: 20px;
+}
+div{
+    display: flex;
+    justify-content: space-between;
+}
+.right, .left{
+    display: flex;
+    flex-direction: row;
+}
+.lightning-combobox{
+    display: flex;
+    justify-content: space-between;
+    width:100px;
+}
+c-okr {
+    margin: 19px;
+}

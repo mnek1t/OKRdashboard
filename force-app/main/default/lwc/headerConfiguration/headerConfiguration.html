@@ -1,0 +1,21 @@
+<template>
+    <lightning-card title="OKR Dashboard" icon-name="utility:advertising">
+        <div class="">
+            <div class="left container">
+                <ul class="slds-text-heading_small">
+                    <li>User: <span class ="slds-text-title_bold">{assignedUserObjectivities}</span></li>
+                    <li >Year: <span class ="slds-text-title_bold">{objectivityYear}</span></li>
+                </ul>
+            </div>
+            <div class="right">
+                <lightning-combobox  options={userOptions} onchange={switchUserObjectivities} placeholder="Select User"></lightning-combobox>
+                <lightning-combobox placeholder="Select Year" value="year" options={yearOptions} onchange={switchYearObjectivities}></lightning-combobox>
+                <lightning-combobox placeholder="" value="activity" options={activityButtons} onchange={provideActivity}></lightning-combobox>
+                <c-okr user-options={userOptions}></c-okr>               
+            </div> 
+        </div>
+        <lightning-card title="Assigned Objectives">
+            <c-objectvity-list></c-objectvity-list>
+        </lightning-card>
+    </lightning-card>
+</template>
