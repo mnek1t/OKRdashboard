@@ -1,6 +1,6 @@
 <template>
     <lightning-card title="OKR Dashboard" icon-name="utility:advertising">
-        <div class="">
+        <div>
             <div class="left container">
                 <ul class="slds-text-heading_small">
                     <li>User: <span class ="slds-text-title_bold">{assignedUserObjectivities}</span></li>
@@ -11,14 +11,30 @@
                 <lightning-combobox placeholder="Select User" value="user" options={userOptions}  onchange={switchUserObjectivities} ></lightning-combobox>
                 <lightning-combobox placeholder="Select Year" value="year" options={yearOptions} onchange={switchYearObjectivities}></lightning-combobox>
                 <lightning-combobox placeholder="" value="activity" options={activityButtons} onchange={provideActivity}></lightning-combobox>
-                <c-okr user-options={userOptions} onfetchchechedtrackedfieldsevent={getTrackFields}></c-okr>               
+                <c-okr user-options={userOptions} onfetchtrackfields={getTrackFields}></c-okr>               
             </div> 
         </div>
         <template if:true={userId}>
-            <lightning-card title="Assigned Objectives">
-                <c-objectvity-list track-fields={trackFields} user-id={userId} year={objectivityYear} ></c-objectvity-list>
-            </lightning-card>
+            <lightning-card title="Assigned Objectives"></lightning-card>
+            <c-objectvity-list user-id={userId} year={objectivityYear} tracked-fields={trackedFields} ></c-objectvity-list>
         </template>
-        
+        <!-- IF ACTION! -->
+        <template if:true={isCreateReview}>
+            <div class="slds-backdrop slds-backdrop_open">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal__container slds-fade-in-open">
+                    <header class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add Review</h2>
+                    </header>
+                    <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-1">
+                            <lightning-input label="Review Name" lwc:ref="reviewName"></lightning-input>
+                            <lightning-combobox label="Key Result" value={Name} options={keyResultsRecords} lwc:ref="keyResult"></lightning-combobox>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button class="slds-button_neutral" label="Close" value="close" onclick={handleOpeningCreatingReview}></lightning-button>
+                        <button id='addObj' class="slds-button slds-button_brand" onclick={handleSubmitReview}>Create</button>
+                    </footer>
+                </section>
+            </div>
+        </template>
     </lightning-card>
 </template>

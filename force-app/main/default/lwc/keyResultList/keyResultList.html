@@ -1,13 +1,50 @@
 <template>
     <div lwc:ref="KeyResultId">
-        <template for:each={keyResults} for:item="keyresult">
-            <ul key={keyresult.Id} class="slds-form-element slds-box slds-box_xx-small">
-                <li style="flex: 1;">{keyresult.Name}</li>
-                <li>Progress: {keyresult.Progress__c} </li>
-                <template for:each={keyresult.Opportunities__r} for:item="opp">
-                    <li key={opp.Id}>Opportunity: {opp.Name}</li>
-                </template>  
-            </ul>
+        <template for:each={keyResults} for:item="keyresult">   
+            <div key={keyresult.Id} class="slds-box slds-box_xx-small">
+                <div style="width: 200px;display:flex; justify-content:space-between; flex-wrap: wrap; overflow: auto;">
+                    <span>{keyresult.Name}</span>
+                    <span>{keyresult.Progress__c}</span> 
+                </div>
+                
+                <template for:each={targets} for:item="target">
+                    <div key={target.label}>
+                        <ul>
+                            <li>{target.label}: {target.value}</li>
+                        </ul>
+                    </div>
+                </template>
+                <lightning-button label="Config" value="config" onclick={handleSetTargetsWindow}></lightning-button>
+            </div>
+            
+            <!-- <template if:true={keyresult.Opportunities__r}>
+                <li>Opportunity: {amoutOfOpportunities}</li>
+            </template>  -->     
+        </template>
+        
+        <template if:true={showTargetWindow}>
+            <div class="slds-backdrop slds-backdrop_open">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal__container slds-fade-in-open">
+                    <header class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Set Fields to Track</h2>
+                    </header>
+                    <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-1">
+                        <div class="slds-form-element" style="columns: 2;">
+                            <lightning-checkbox-group name="Checkbox Group" options={relatedFieldsOptions} value={trackedFields} onchange={handleSelectedTargetFieldOption} lwc:ref="trackFields"></lightning-checkbox-group>
+                        </div>
+                       <template for:each={targetedFields} for:item="targetedField">
+                            <ul key={targetedField}>
+                                <li>{targetedField}</li>
+                                <lightning-input class='target' name={targetedField} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
+                            </ul>
+                       </template>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button class="slds-button_neutral" label="Close" value="close" onclick={handleSetTargetsWindow}></lightning-button>
+                        <button id='setTarget' class="slds-button slds-button_brand" onclick={handleSetTargetFields}>Set</button>
+                    </footer>
+                </section>
+            </div>
         </template>
     </div>
 </template>
