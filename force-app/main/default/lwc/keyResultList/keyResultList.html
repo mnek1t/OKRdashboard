@@ -6,15 +6,27 @@
                     <span>{keyresult.Name}</span>
                     <span>{keyresult.Progress__c}</span> 
                 </div>
-                
-                <template for:each={targets} for:item="target">
-                    <div key={target.label}>
-                        <ul>
-                            <li>{target.label}: {target.value}</li>
-                        </ul>
-                    </div>
+                <template lwc:if={savedTargets}>
+                    <template for:each={savedTargets} for:item="savedTarget">
+                        <div key={savedTarget.label}>
+                            <ul>
+                                <li>{savedTarget.label}: {savedTarget.value} / {savedTarget.setTarget} </li>
+                            </ul>
+                        </div>
+                    </template>
                 </template>
-                <lightning-button label="Config" value="config" onclick={handleSetTargetsWindow}></lightning-button>
+                <template lwc:elseif={targets}>
+                    <template for:each={targets} for:item="target">
+                        <div key={target.label}>
+                            <ul>
+                                <li>{target.label}: {target.value} / {target.setTarget} </li>
+                            </ul>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <lightning-button label="Config" value="config" onclick={handleSetTargetsWindow}></lightning-button>
+                </template>
             </div>
             
             <!-- <template if:true={keyresult.Opportunities__r}>
@@ -32,10 +44,13 @@
                         <div class="slds-form-element" style="columns: 2;">
                             <lightning-checkbox-group name="Checkbox Group" options={relatedFieldsOptions} value={trackedFields} onchange={handleSelectedTargetFieldOption} lwc:ref="trackFields"></lightning-checkbox-group>
                         </div>
-                       <template for:each={targetedFields} for:item="targetedField">
-                            <ul key={targetedField}>
-                                <li>{targetedField}</li>
-                                <lightning-input class='target' name={targetedField} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
+                        <template for:each={targetedFieldsWithContracts} for:item="targetedField">
+                            <ul key={targetedField.value}>
+                                <li>{targetedField.value}</li>
+                                <lightning-input class='target' name={targetedField.value} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
+                                <template lwc:if={targetedField.isContract}>
+                                    <lightning-combobox placeholder="Select type" value={contractType} options={contractTypeOptions} onchange={handleSelectedTypeContract}></lightning-combobox>
+                                </template>
                             </ul>
                        </template>
                     </div>
