@@ -1,17 +1,20 @@
-import { LightningElement,api,track  } from 'lwc';
-import getObjectivities from '@salesforce/apex/ObjectivesHandler.getObjectivities';
-
+import { LightningElement,wire,track,api } from 'lwc';
+//apex methods
+import getObjectivitiesOptionsAccordingUser from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptionsAccordingUser';
 export default class ObjectvityList extends LightningElement 
 {
-    @track objectivities;
-    connectedCallback(){
-        this.loadObjectivities();
-    }
-    loadObjectivities(){
-        getObjectivities()
-        .then(result=>{
-            this.objectivities = result;
-        })
-        .catch(error=>{})
+    @api userId; // get userId from headerConfiguration component to display objectives only assigned to this user
+    @api year; // get year from headerConfiguration component to display objectives only assigned to this year and further, (not past)
+    @api trackedFields; // TODO write a commeent
+    @track objectivities; // contain a list of objectives
+    
+    //automatically retirieve objective in accordance to particaular userId and specified year
+    @wire(getObjectivitiesOptionsAccordingUser, {user: '$userId', year: '$year'})
+    wiredData({error, data}){
+        if (data) {
+            this.objectivities = data;   
+        } else if (error) {
+            console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
+        }
     }
 }

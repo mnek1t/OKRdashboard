@@ -1,17 +1,60 @@
 <template>
-    <div class="slds-card__body slds-card__body_inner">
-        <template for:each={keyResults} for:item="keyResult">
-            <div class="slds-form-element slds-box slds-box_xx-small" style="display: flex; flex: 1;" key={keyResult.Id}>
-                <div class="card">
-                    <lightning-card title={keyResult.Name}>
-                        <p>{keyResult.Progress__c}</p>
-                    </lightning-card>
+    <div lwc:ref="KeyResultId">
+        <template for:each={keyResults} for:item="keyresult">   
+            <div key={keyresult.Id} class="slds-box slds-box_xx-small">
+                <div style="width: 200px;display:flex; justify-content:space-between; flex-wrap: wrap; overflow: auto;">
+                    <span><b>{keyresult.Name}</b></span>
+                    <span><b>{keyresult.Progress__c}</b></span> 
                 </div>
-            </div>
+                <template lwc:if={savedTargets}>
+                    <template for:each={savedTargets} for:item="savedTarget">
+                        <div key={savedTarget.label}>
+                            <ul>
+                                <li>{savedTarget.label}: {savedTarget.value} / {savedTarget.setTarget} </li>
+                            </ul>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:elseif={targets}>
+                    <template for:each={targets} for:item="target">
+                        <div key={target.label}>
+                            <ul>
+                                <li>{target.label}: {target.value} / {target.setTarget} </li>
+                            </ul>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <lightning-button label="Config" value="config" onclick={handleSetTargetsWindow}></lightning-button>
+                </template>
+            </div>   
         </template>
-        <template if:true={error}>
-            <div class="slds-text-color_error">
-                An error occurred while loading the bear list
+        
+        <template if:true={showTargetWindow}>
+            <div class="slds-backdrop slds-backdrop_open">
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal__container slds-fade-in-open">
+                    <header class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Set Fields to Track</h2>
+                    </header>
+                    <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-1">
+                        <div class="slds-form-element" style="columns: 2;">
+                            <lightning-checkbox-group name="Checkbox Group" options={relatedFieldsOptions} value={trackedFields} onchange={handleSelectedTargetFieldOption} lwc:ref="trackFields"></lightning-checkbox-group>
+                        </div>
+                        <template for:each={targetedFieldsWithContracts} for:item="targetedField">
+                            <ul key={targetedField.value}>
+                                <!-- <li>{targetedField.value}</li> -->
+                                <lightning-input label={targetedField.value} class='target' name={targetedField.value} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
+                                <template lwc:if={targetedField.isContract}>
+                                    <lightning-combobox placeholder="Select type" value={contractType} options={contractTypeOptions} onchange={handleSelectedTypeContract}></lightning-combobox>
+                                </template>
+                            </ul>
+                       </template>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button class="slds-button_neutral" label="Close" value="close" onclick={handleSetTargetsWindow}></lightning-button>
+                        <button id='setTarget' class="slds-button slds-button_brand" onclick={handleSetTargetFields}>Set</button>
+                    </footer>
+                </section>
             </div>
         </template>
     </div>

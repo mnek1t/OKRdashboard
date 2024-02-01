@@ -1,23 +1,21 @@
 <template>
-    <template for:each={objectivities} for:item="objectivity">
-        <div key={objectivity.Id} class="slds-border_bottom">
-            <div class="slds-form-element" style="display: flex;">
-                <div style="flex: 1; flex-wrap: wrap; display: flex;">
-                    <lightning-card title={objectivity.Name} style="flex-basis: 200px;"></lightning-card>
-                </div>
-                <div style="flex: 1; flex-wrap: wrap;">
-                    <template for:each={objectivity.Key_Results__r} for:item="keyResult">
-                        <div key={keyResult.Id} style="margin-right: 10px;">
-                            <div>
-                                <ul>
-                                    <li class="slds-form-element slds-box slds-box_xx-small" style="flex: 1;">{keyResult.Name}</li>
-                                </ul>
+    <template if:true={objectivities}>
+        <template for:each={objectivities} for:item="objectivity">
+            <div key={objectivity.Id} class="slds-border_top">
+                <div style="display: flex; align-items: flex-start;">
+                    <div>
+                        <lightning-card title={objectivity.Name}></lightning-card>
+                    </div>
+                    <div style="width: 800px; display:flex; flex:1" >
+                        <template for:each={objectivity.Key_Results__r} for:item="keyResult">
+                            <div key={keyResult.Id} class="slds-var-m-around_xx-small">                      
+                                <c-key-result-list tracked-fields={trackedFields} key-result-id={keyResult.Id}></c-key-result-list>
                             </div>
-                            <!-- <c-key-result-list></c-key-result-list> -->
-                        </div>
-                    </template>
+                        </template>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
     </template>
+    
 </template>

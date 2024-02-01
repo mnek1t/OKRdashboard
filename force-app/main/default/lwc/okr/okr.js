@@ -5,53 +5,39 @@ import createKeyResult from '@salesforce/apex/KeyResultHandler.createKeyResult';
 import getObjectivitiesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptions';
 
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
-import USER_ID from '@salesforce/user/Id';
 
 export default class Okr extends LightningElement 
 { 
-    @api userOptions = []; //all users in org
-    @track formData= {}
-    @track relatedFieldsOptions = [];
-    @track objectivityOptions = [];
-    @track isAddingObjectivity = false;
-    @track isAddingKeyResult = false;
-    @track assignedUserObjectivities = USER_ID;
-    @track objectivityYear = new Date().getFullYear();
-    @track checkBoxValue = ['Opportunity'];
-    //automatically called function
-    connectedCallback() {
-        this.loadOptions();
-    }
-    
-    //retrieve all active users in the org
-    async loadOptions(){
-        try{
-        let result = await getObjectivitiesOptions();
-        this.objectivityOptions = result;
-        }
-        catch(error){
-            console.log('Erorr')
-            console.log(error.message)
-        }
-        let relatedFields = ['Opportunity', 'Google Review', 'Review', 'Case Study', 'Act', 'Survey', 'Call','Event', 'Leads']
+    @api userOptions = []; //all users in org to dispaly in creation new objective
+    @track formData= {} // contain values that will be fetched to Apex methods with key from lwc:ref
+    @track objectivityOptions = []; // contain all objectives to whick will be assigned new key result
+    @track isAddingObjectivity = false; //show modal for creating new Objective__c
+    @track isAddingKeyResult = false; //show modal for creating new KeyResult__c
 
-        this.relatedFieldsOptions = relatedFields.map(field=>({ label: field, value: field }));
-        //console.log('2relatedFieldsOptions', this.relatedFieldsOptions)
-    }
-    // @wire(getObjectivitiesOptions)
-    // wiredObjectivitieOptions({error,data}){
-    //     if(data){
-    //         this.objectivityOptions = [...data];
-    //         console.log(this.objectivityOptions)
-    //     }
-    //     else if(error){
-    //         console.log('WIRED' + error)
-    //     }
-    // }  
-    // handleSelectedOption(event){
-    //     this.value = event.detail.value;
-    //     console.log(this.value)
+    //automatically called functions
+    // connectedCallback() {
+    //     this.loadOptions();
     // }
+    @wire(getObjectivitiesOptions)
+    wiredData({error, data}){
+        if (data) {
+            this.objectivityOptions = data;   
+        } else if (error) {
+            console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
+        }
+    }
+    //retrieve all objectives in the org
+    // async loadOptions(){
+    //     try{
+    //     let result = await getObjectivitiesOptions();
+    //     this.objectivityOptions = result;
+    //     }
+    //     catch(error){
+    //         console.log('Erorr')
+    //         console.log(error.message)
+    //     }
+    // }
+    //show modals handler
     handleOpening(event){
         if(event.target.value == 'close'){
             this.isAddingObjectivity = false; 
@@ -64,19 +50,18 @@ export default class Okr extends LightningElement
             this.isAddingKeyResult = true;
         }
     }
-    //record data
-    async handleSubmit(event){
-        console.log('event', event)
+    //submit all fulfilled data to create Objective__c or KeyResult__c
+    async handleSubmitToCreate(event){
         for(let prop in this.refs){
              this.formData[prop] = this.refs[prop].value
         }
-        console.log('1',JSON.stringify(this.formData))
         try{
-            if(event.target.innerText == 'Create Key'){
+            if(event.target.value == 'key'){
                 await createKeyResult({
                     keyResultName: this.formData['keyResultName'],
                     objectivityId: this.formData['objectivityId']
                 })
+                
                 this.isAddingKeyResult = false;
             }
             else{
@@ -85,11 +70,11 @@ export default class Okr extends LightningElement
                     description: this.formData['description'], 
                     startDate: this.formData['startDate'], 
                     endDate: this.formData['endDate'],  
-                    userIdAssigned: this.formData['userId'],  
+                    userIdAssigned: this.formData['userId'] 
                 })
                 this.isAddingObjectivity = false;  
             }
-            console.log('Record is created.');
+            console.log('Record is created')
         }
         catch(error){
             this.dispatchEvent(
@@ -99,6 +84,7 @@ export default class Okr extends LightningElement
                     variant: 'error',
                 }),
             );
+            console.log(JSON.stringify(error));
         }
     }
 }
