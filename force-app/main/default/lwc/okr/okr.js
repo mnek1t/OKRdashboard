@@ -5,35 +5,38 @@ import createKeyResult from '@salesforce/apex/KeyResultHandler.createKeyResult';
 import getObjectivitiesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptions';
 
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
-import USER_ID from '@salesforce/user/Id';
 
 export default class Okr extends LightningElement 
 { 
     @api userOptions = []; //all users in org to dispaly in creation new objective
     @track formData= {} // contain values that will be fetched to Apex methods with key from lwc:ref
-    //@track relatedFieldsOptions = []; // пока не трогаю но думаб убрать выбор
     @track objectivityOptions = []; // contain all objectives to whick will be assigned new key result
     @track isAddingObjectivity = false; //show modal for creating new Objective__c
     @track isAddingKeyResult = false; //show modal for creating new KeyResult__c
 
     //automatically called functions
-    connectedCallback() {
-        this.loadOptions();
+    // connectedCallback() {
+    //     this.loadOptions();
+    // }
+    @wire(getObjectivitiesOptions)
+    wiredData({error, data}){
+        if (data) {
+            this.objectivityOptions = data;   
+        } else if (error) {
+            console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
+        }
     }
     //retrieve all objectives in the org
-    async loadOptions(){
-        try{
-        let result = await getObjectivitiesOptions();
-        this.objectivityOptions = result;
-        }
-        catch(error){
-            console.log('Erorr')
-            console.log(error.message)
-        }
-        //TODO delete possibly
-        // let relatedFields = ['Opportunity', 'Google Review', 'Review', 'Case Study', 'Act', 'Survey', 'Call','Event', 'Leads']
-        // this.relatedFieldsOptions = relatedFields.map(field=>({ label: field, value: field }));
-    }
+    // async loadOptions(){
+    //     try{
+    //     let result = await getObjectivitiesOptions();
+    //     this.objectivityOptions = result;
+    //     }
+    //     catch(error){
+    //         console.log('Erorr')
+    //         console.log(error.message)
+    //     }
+    // }
     //show modals handler
     handleOpening(event){
         if(event.target.value == 'close'){
@@ -47,17 +50,11 @@ export default class Okr extends LightningElement
             this.isAddingKeyResult = true;
         }
     }
-    //TODO delete possibly
-    //@track trackFields = [];
-    // handleSelectedOption(event){
-    //     this.trackFields = event.detail.value;
-    // }
     //submit all fulfilled data to create Objective__c or KeyResult__c
     async handleSubmitToCreate(event){
         for(let prop in this.refs){
              this.formData[prop] = this.refs[prop].value
         }
-        console.log(this.formData['objectivityId'])
         try{
             if(event.target.value == 'key'){
                 await createKeyResult({
@@ -87,6 +84,7 @@ export default class Okr extends LightningElement
                     variant: 'error',
                 }),
             );
+            console.log(JSON.stringify(error));
         }
     }
 }

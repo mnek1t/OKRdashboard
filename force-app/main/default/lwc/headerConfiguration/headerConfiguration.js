@@ -33,7 +33,10 @@ export default class HeaderConfiguration extends LightningElement
     wiredUser({ error, data }) {
         if (data) {
             this.assignedUserObjectivities = data.fields.Name.value;
-        } else {}
+        } 
+        else {
+            console.log(error)
+        }
     }
     // auto launch the methods
     connectedCallback() {

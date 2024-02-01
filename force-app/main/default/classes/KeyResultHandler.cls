@@ -1,14 +1,14 @@
 public with sharing class KeyResultHandler {
     @AuraEnabled
-    public static KeyResult__c createKeyResult(String keyResultName, Id objectivityId){ //create new Record in KeyResult__c object    
+    public static KeyResult__c createKeyResult(String keyResultName, String objectivityId){ //create new Record in KeyResult__c object    
         KeyResult__c keyResult = new KeyResult__c(
             Name = keyResultName,
-            Objectivity__c = objectivityId
+            Objectivity__c = (Id)objectivityId
         );
         insert keyResult;
         return keyResult;
     }
-    @AuraEnabled
+    @AuraEnabled(cacheable=true)
     public static List<Map<String,String>> getKeyRecordsOptions(){ 
         List<Map<String,String>> keyRecordsOptions = new List<Map<String,String>>();
         for(KeyResult__c keyRecord :[SELECT Id, Name FROM KeyResult__c]){
@@ -52,7 +52,7 @@ public with sharing class KeyResultHandler {
              FROM KeyResult__c WHERE Id =:keyResultId];
         }
     }
-    @AuraEnabled // update Progress__c field for keyResult
+    @AuraEnabled(cacheable=true) // update Progress__c field for keyResult
     public static List<KeyResult__c> updateKeyResultProgress(Integer sumOfTargets,List<KeyResult__c> keyResults, Integer sumofCompletedTargets){
         List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
         for(KeyResult__c k: keyResults)
@@ -64,7 +64,7 @@ public with sharing class KeyResultHandler {
             else k.Progress__c = 'Finished';
             keyResultsToUpdate.add(k);
         } 
-        update keyResultsToUpdate;
+        //update keyResultsToUpdate;
         return keyResultsToUpdate;
     }
     @AuraEnabled
@@ -98,5 +98,11 @@ public with sharing class KeyResultHandler {
             Key_Result__c = keyResultId
         );
         insert caseStudy;
+    }
+    public static void deleteKeyResult(Id keyResult){
+        delete [SELECT Id FROM KeyResult__c WHERE Id =: keyResult];
+    }
+    public static void deleteKeyResults(List<KeyResult__c> keyResults){
+        delete keyResults;
     }
 }

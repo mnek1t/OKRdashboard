@@ -3,8 +3,8 @@
         <template for:each={keyResults} for:item="keyresult">   
             <div key={keyresult.Id} class="slds-box slds-box_xx-small">
                 <div style="width: 200px;display:flex; justify-content:space-between; flex-wrap: wrap; overflow: auto;">
-                    <span>{keyresult.Name}</span>
-                    <span>{keyresult.Progress__c}</span> 
+                    <span><b>{keyresult.Name}</b></span>
+                    <span><b>{keyresult.Progress__c}</b></span> 
                 </div>
                 <template lwc:if={savedTargets}>
                     <template for:each={savedTargets} for:item="savedTarget">
@@ -27,11 +27,7 @@
                 <template lwc:else>
                     <lightning-button label="Config" value="config" onclick={handleSetTargetsWindow}></lightning-button>
                 </template>
-            </div>
-            
-            <!-- <template if:true={keyresult.Opportunities__r}>
-                <li>Opportunity: {amoutOfOpportunities}</li>
-            </template>  -->     
+            </div>   
         </template>
         
         <template if:true={showTargetWindow}>
@@ -46,8 +42,8 @@
                         </div>
                         <template for:each={targetedFieldsWithContracts} for:item="targetedField">
                             <ul key={targetedField.value}>
-                                <li>{targetedField.value}</li>
-                                <lightning-input class='target' name={targetedField.value} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
+                                <!-- <li>{targetedField.value}</li> -->
+                                <lightning-input label={targetedField.value} class='target' name={targetedField.value} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
                                 <template lwc:if={targetedField.isContract}>
                                     <lightning-combobox placeholder="Select type" value={contractType} options={contractTypeOptions} onchange={handleSelectedTypeContract}></lightning-combobox>
                                 </template>
