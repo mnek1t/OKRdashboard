@@ -13,16 +13,16 @@ export default class KeyResultList extends LightningElement
     @track relatedFieldsOptions; // array store all related fields 
     @track targets; // contain key-value pair: RelatedObj-amout of these objects conneted with one keyResult
     //retrive data in field from user input
-    @track opportunityTarget = -1;
-    @track reviewTarget = -1;
-    @track googleReviewTarget = -1;
-    @track surveyTarget = -1;
-    @track caseStudyTarget = -1;
-    @track callTarget = -1;
-    @track actTarget = -1;
-    @track leadTarget = -1;
-    @track eventTarget = -1;
-    @track contractTarget = -1
+    opportunityTarget = -1;
+    reviewTarget = -1;
+    googleReviewTarget = -1;
+    surveyTarget = -1;
+    caseStudyTarget = -1;
+    callTarget = -1;
+    actTarget = -1;
+    leadTarget = -1;
+    eventTarget = -1;
+    contractTarget = -1
     @track savedTargets; // download from localStorage 
     
     //particular for case when Contract is checked as a Target 
@@ -79,6 +79,7 @@ export default class KeyResultList extends LightningElement
                 sumofCompletedTargets = sumofCompletedTargets + value; 
                 return {label: item.label, value: value, setTarget: item.setTarget, contractType: item.contractType};
            }))
+           //TODO: take off the comment in method to update progress for obj, not only in lwc and change the callout of method to avoid DML limit
             this.keyResults  = await updateKeyResultProgress({sumOfTargets:sumOfTargets, keyResults: this.keyResults, sumofCompletedTargets: sumofCompletedTargets});
         }
         }
