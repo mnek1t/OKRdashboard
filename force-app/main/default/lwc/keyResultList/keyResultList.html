@@ -6,20 +6,11 @@
                     <span><b>{keyresult.Name}</b></span>
                     <span><b>{keyresult.Progress__c}</b></span> 
                 </div>
-                <template lwc:if={savedTargets}>
-                    <template for:each={savedTargets} for:item="savedTarget">
-                        <div key={savedTarget.label}>
+                <template lwc:if={TARGETS}>
+                    <template for:each={TARGETS} for:item="TARGET">
+                        <div key={TARGET.targetLabel}>
                             <ul>
-                                <li>{savedTarget.label}: {savedTarget.value} / {savedTarget.setTarget} </li>
-                            </ul>
-                        </div>
-                    </template>
-                </template>
-                <template lwc:elseif={targets}>
-                    <template for:each={targets} for:item="target">
-                        <div key={target.label}>
-                            <ul>
-                                <li>{target.label}: {target.value} / {target.setTarget} </li>
+                                <li>{TARGET.targetLabel}: {TARGET.completedTarget} / {TARGET.desiredTarget} </li>
                             </ul>
                         </div>
                     </template>
