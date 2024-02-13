@@ -174,7 +174,7 @@ export default class HeaderConfiguration extends LightningElement
         } catch (error) {
             console.log('Error in creating a Survey',JSON.stringify(error))
         }
-        this.isCreateSurvey = false;
+        this.isCreateCaseStudy = false;
      }
 
     @track trackedFields = []

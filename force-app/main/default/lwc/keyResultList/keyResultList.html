@@ -2,7 +2,7 @@
     <div lwc:ref="KeyResultId">
         <template for:each={keyResults} for:item="keyresult">   
             <div key={keyresult.Id} class="slds-box slds-box_xx-small">
-                <div style="width: 200px;display:flex; justify-content:space-between; flex-wrap: wrap; overflow: auto;">
+                <div style="width: 220px;display:flex; justify-content:space-between; flex-wrap: wrap; overflow: auto;">
                     <span><b>{keyresult.Name}</b></span>
                     <span><b>{keyresult.Progress__c}</b></span> 
                 </div>
@@ -33,7 +33,6 @@
                         </div>
                         <template for:each={targetedFieldsWithContracts} for:item="targetedField">
                             <ul key={targetedField.value}>
-                                <!-- <li>{targetedField.value}</li> -->
                                 <lightning-input label={targetedField.value} class='target' name={targetedField.value} onchange={handlerSetTarget} placeholder="Set target value"></lightning-input>
                                 <template lwc:if={targetedField.isContract}>
                                     <lightning-combobox placeholder="Select type" value={contractType} options={contractTypeOptions} onchange={handleSelectedTypeContract}></lightning-combobox>

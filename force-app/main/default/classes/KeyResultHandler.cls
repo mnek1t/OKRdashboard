@@ -1,4 +1,5 @@
 public with sharing class KeyResultHandler {
+
     @AuraEnabled
     public static KeyResult__c createKeyResult(String keyResultName, String objectivityId){ //create new Record in KeyResult__c object    
         KeyResult__c keyResult = new KeyResult__c(
@@ -52,9 +53,12 @@ public with sharing class KeyResultHandler {
              FROM KeyResult__c WHERE Id =:keyResultId];
         }
     }
+    private static List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
+
     @AuraEnabled(cacheable=true) // update Progress__c field for keyResult
     public static List<KeyResult__c> updateKeyResultProgress(Integer sumOfTargets,List<KeyResult__c> keyResults, Integer sumofCompletedTargets){
-        List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
+        //List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
+        List<AggregateResult> results = [SELECT COUNT(Id) FROM KeyResult__c];
         for(KeyResult__c k: keyResults)
         {
             if(sumofCompletedTargets < sumOfTargets/2 || sumOfTargets==0 )
@@ -64,9 +68,16 @@ public with sharing class KeyResultHandler {
             else k.Progress__c = 'Finished';
             keyResultsToUpdate.add(k);
         } 
-        //update keyResultsToUpdate;
+        if (!results.isEmpty()) {
+            Integer countValue = Integer.valueOf(results[0].get('expr0'));
+            if(keyResultsToUpdate.size() == 3)
+            {
+                update keyResultsToUpdate;
+            }
+        }
+        System.debug(keyResultsToUpdate);
         return keyResultsToUpdate;
-    }
+    }   
     @AuraEnabled
     public static void createReview(String reviewName, Id keyResultId){ // create Review__c as a related field in KeyResult__c
         Review__c review = new Review__c(

@@ -14,7 +14,6 @@ export default class KeyResultList extends LightningElement
     @track keyResults; //contains all keyresult
     @track showTargetWindow=false; // open SetTarget Window
     @track relatedFieldsOptions; // array store all related fields 
-    @track targets; // contain key-value pair: RelatedObj-amout of these objects conneted with one keyResult
     //retrive data in field from user input
     opportunityTarget = -1;
     reviewTarget = -1;
@@ -26,7 +25,6 @@ export default class KeyResultList extends LightningElement
     leadTarget = -1;
     eventTarget = -1;
     contractTarget = -1
-    //@track savedTargets; // download from localStorage 
     
     //particular for case when Contract is checked as a Target 
     @track showPicklist = false;
@@ -35,12 +33,12 @@ export default class KeyResultList extends LightningElement
     @track targetedFields=[];
     @track targetedFieldsWithContracts = [];
 
-    //поля хранят в себе 
+    //retrive data about targets
     @track recievedTargets;
-    strOfTargets = ''; //строка имен таргетов выбранных пользователем
-    strOfAmoutTarget = ''; // строка чисел - количества выбраных таргетов
+    strOfTargets = ''; //string of target labels
+    strOfAmoutTarget = ''; //string of amount of targets
     strOfContractTypes = '';
-    @track TARGETS//сюда записую таргетв по новому способу
+    @track TARGETS//containt retrieved targets 
     //collection contains: key - option name, chosen in SetTargetWinodow and value - input
     @track dictionary = {
         'Opportunity': this.opportunityTarget,
@@ -56,12 +54,12 @@ export default class KeyResultList extends LightningElement
     }
     //autolaunched methods
     connectedCallback(){
-       let result = JSON.parse(localStorage.getItem(this.keyResultId));
-       this.loadKeyResults(result);
+       //let result = JSON.parse(localStorage.getItem(this.keyResultId));
+       this.loadKeyResults();
        this.loadPicklist();
     }
     //get keyResult by its id and get all options for checkboxgroup
-    async loadKeyResults(result){
+    async loadKeyResults(){
         try{
         this.recievedTargets = await getTargets({keyResultId: this.keyResultId});
         this.relatedFieldsOptions = RELATED_FIELD_OPTION.map(field=>({ label: field, value: field }));
@@ -90,26 +88,12 @@ export default class KeyResultList extends LightningElement
                 sumofCompletedTargets = sumofCompletedTargets + parseInt(completedTarget);
                 return {targetLabel: label, completedTarget : completedTarget, desiredTarget: desiredAmount }
             }));
-            //console.log('TARGETS', JSON.stringify(this.TARGETS));
             let sumOfTargets = listOfTargetsAmount.map(Number).reduce((a,b) => a+b, 0);
-            //console.log('sumOfTargets',sumOfTargets);
-            console.log('strOfContractTypes', this.strOfContractTypes);
             this.keyResults  = await updateKeyResultProgress({sumOfTargets:sumOfTargets, keyResults: this.keyResults, sumofCompletedTargets: sumofCompletedTargets});
         }
-        // let sumOfTargets = 0;
-        // let listOfTargets = [];
-        // let sumofCompletedTargets = 0;
-        // if(result!==null){
-        //     this.savedTargets = await Promise.all (result.map(async item => {
-        //         let value = await this.getAmountOfRelatedField(item.label);
-        //         sumOfTargets = sumOfTargets + parseInt(item.setTarget);
-        //         listOfTargets.push(item.label.toString());
-        //         sumofCompletedTargets = sumofCompletedTargets + value; 
-        //         return {label: item.label, value: value, setTarget: item.setTarget, contractType: item.contractType};
-        //    }))
-        //    //TODO: take off the comment in method to update progress for obj, not only in lwc and change the callout of method to avoid DML limit
-        //     this.keyResults  = await updateKeyResultProgress({sumOfTargets:sumOfTargets, keyResults: this.keyResults, sumofCompletedTargets: sumofCompletedTargets});
-        // }
+        else{
+            this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: null});
+        }
         }
         catch(error){
             console.log('load keyResults error: ',JSON.parse(error));
@@ -138,21 +122,26 @@ export default class KeyResultList extends LightningElement
         let value; let targetFromDictionary; let isContract = false;
         try {
             //current related fields
-            this.targets = await Promise.all (this.trackedFields.map(async field => {
+            await Promise.all (this.trackedFields.map(async field => {
                 value = await this.getAmountOfRelatedField(field);
                 this.strOfTargets = this.strOfTargets + field;
                 targetFromDictionary = this.dictionary[field] !==-1 ? this.dictionary[field] : 0;
                 this.strOfAmoutTarget = this.strOfAmoutTarget + targetFromDictionary + ' ';
-                return {label: field, value: value, setTarget: targetFromDictionary,contractType: this.contractType};
             }));
             this.strOfTargets = this.strOfTargets.replace(/(?<=[a-z|\)])(?=[A-Z])/g, ',');
             this.strOfAmoutTarget = this.strOfAmoutTarget.slice(0,-1);
-            //console.log('this.contractType', this.contractType)
-            // console.log('String of targets: ', this.strOfTargets);
-            // console.log('String of amount targets: ', this.strOfAmoutTarget);
-            // console.log('this.keyResultId',this.keyResultId.toString());
-
             saveTargets({targets: this.strOfTargets, amount : this.strOfAmoutTarget, keyResultId: this.keyResultId, contractType: this.contractType});
+        //REACTIVLY DISPLAY TARGETS
+            let listOfTargets = this.strOfTargets.split(',');
+            let listOfTargetsAmount = this.strOfAmoutTarget.split(' ');
+            let targetWithAmount = {};
+            for (let i = 0; i < listOfTargets.length; i++) {
+                targetWithAmount[listOfTargets[i]] = listOfTargetsAmount[i];
+            }
+            this.TARGETS  = await Promise.all(Object.entries(targetWithAmount).map(async ([label, desiredAmount]) => {
+                let completedTarget = await this.getAmountOfRelatedField(label); 
+                return {targetLabel: label, completedTarget : completedTarget, desiredTarget: desiredAmount }
+            }));
         } catch (error) {
             console.log('handleSetTargetFields error: ', error.message);
         }
