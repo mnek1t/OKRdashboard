@@ -5,8 +5,8 @@ private with sharing class TestObjectiveHandler {
     {
         Objective__c newObj = new Objective__c(Name = 'Test', 
         Start_Date__c = Date.valueOf('2024-02-01'), 
-        End_Date__c = Date.valueOf('2024-02-03'), 
-        Owner__c = '005Wy000000A649IAC'
+        End_Date__c = Date.valueOf('2024-02-03'),
+        AssignedTo__c = '005Wy000000A649IAC'
         );  
         Test.startTest();
         insert newObj;

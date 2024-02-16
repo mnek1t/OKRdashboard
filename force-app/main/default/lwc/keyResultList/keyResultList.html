@@ -6,11 +6,11 @@
                     <span><b>{keyresult.Name}</b></span>
                     <span><b>{keyresult.Progress__c}</b></span> 
                 </div>
-                <template lwc:if={TARGETS}>
-                    <template for:each={TARGETS} for:item="TARGET">
-                        <div key={TARGET.targetLabel}>
+                <template lwc:if={recievedTargets.length}>
+                    <template for:each={recievedTargets} for:item="TARGET">
+                        <div key={TARGET}>
                             <ul>
-                                <li>{TARGET.targetLabel}: {TARGET.completedTarget} / {TARGET.desiredTarget} </li>
+                                <li>{TARGET.Name}: {TARGET.Completed__c} / {TARGET.ToAchieve__c} </li>
                             </ul>
                         </div>
                     </template>

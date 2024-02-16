@@ -6,7 +6,7 @@ public with sharing class ObjectivesHandler
         Objective__c newObjectivity = new Objective__c(
             Name = objName, 
             Description__c = description,
-            Owner__c = (Id)userIdAssigned,
+            AssignedTo__c = (Id)userIdAssigned,
             Start_date__c = startDate,
             End_Date__c = endDate 
         );
@@ -30,7 +30,7 @@ public with sharing class ObjectivesHandler
     public static List<Objective__c> getObjectivitiesOptionsAccordingUser(String user, String year){
         List<Objective__c> objectives  = 
             [SELECT Id, Name,(SELECT Id,Name,Progress__c FROM Key_Results__r) FROM Objective__c 
-            WHERE Owner__c =: (Id)user AND CALENDAR_YEAR(Start_date__c) <=: Integer.valueOf(year) AND CALENDAR_YEAR(End_date__c) >=: Integer.valueOf(year)];
+            WHERE AssignedTo__c =: (Id)user AND CALENDAR_YEAR(Start_date__c) <=: Integer.valueOf(year) AND CALENDAR_YEAR(End_date__c) >=: Integer.valueOf(year)];
         return objectives;
     }
     @AuraEnabled(cacheable=true)
