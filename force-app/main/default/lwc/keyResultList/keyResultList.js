@@ -1,9 +1,7 @@
 import { LightningElement,api,track,wire } from 'lwc';
 //apex methods
 import getKeyResults from '@salesforce/apex/KeyResultHandler.getKeyResults';
-import updateKeyResultProgress from '@salesforce/apex/KeyResultHandler.updateKeyResultProgress'
 import getContractTypes from '@salesforce/apex/ContractsHandler.getContractTypes';
-//import saveTargets from '@salesforce/apex/TargetsHandler.saveTargets';
 import getTargets from '@salesforce/apex/TargetsHandler.getTargets';
 import setTarget from '@salesforce/apex/TargetsHandler.setTarget';
 

@@ -1,4 +1,5 @@
 public with sharing class ContractsHandler {
+    //get contracts types for selecting a type in LWC
     @AuraEnabled
     public static List<String> getContractTypes(){
         List<String> options = new List<String>();

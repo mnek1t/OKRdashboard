@@ -1,7 +1,7 @@
 public with sharing class KeyResultHandler {
-
+    //create new Record in KeyResult__c object
     @AuraEnabled
-    public static KeyResult__c createKeyResult(String keyResultName, String objectivityId){ //create new Record in KeyResult__c object    
+    public static KeyResult__c createKeyResult(String keyResultName, String objectivityId){     
         KeyResult__c keyResult = new KeyResult__c(
             Name = keyResultName,
             Objectivity__c = (Id)objectivityId
@@ -9,6 +9,7 @@ public with sharing class KeyResultHandler {
         insert keyResult;
         return keyResult;
     }
+    //get collection of keys(Key Result Name) and values(Key Result Id)
     @AuraEnabled(cacheable=true)
     public static List<Map<String,String>> getKeyRecordsOptions(){ 
         List<Map<String,String>> keyRecordsOptions = new List<Map<String,String>>();
@@ -22,6 +23,7 @@ public with sharing class KeyResultHandler {
         }
         return keyRecordsOptions;
     }
+    //get all Key Results with all related objects
     @AuraEnabled(cacheable = true)
     public static List<KeyResult__c> getKeyResults(Id keyResultId, String contractType){ 
             return [SELECT Name, Progress__c,
@@ -37,62 +39,43 @@ public with sharing class KeyResultHandler {
             (SELECT Id FROM Contracts__r WHERE Type__c =: contractType)
             FROM KeyResult__c WHERE Id =:keyResultId];
     }
-    private static List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
-
-    @AuraEnabled(cacheable=true) // update Progress__c field for keyResult
-    public static List<KeyResult__c> updateKeyResultProgress(Integer sumOfTargets,List<KeyResult__c> keyResults, Integer sumofCompletedTargets){
-        List<AggregateResult> results = [SELECT COUNT(Id) FROM KeyResult__c];
-        for(KeyResult__c k: keyResults)
-        {
-            if(sumofCompletedTargets < sumOfTargets/2 || sumOfTargets==0 )
-                k.Progress__c = 'In progress';
-            else if(sumofCompletedTargets >= sumOfTargets/2 && sumofCompletedTargets < sumOfTargets)
-                k.Progress__c = 'Halfway through';
-            else k.Progress__c = 'Finished';
-            keyResultsToUpdate.add(k);
-        } 
-        if (!results.isEmpty()) {
-            Integer countValue = Integer.valueOf(results[0].get('expr0'));
-            if(keyResultsToUpdate.size() == 3)
-            {
-                update keyResultsToUpdate;
-            }
-        }
-        System.debug(keyResultsToUpdate);
-        return keyResultsToUpdate;
-    }   
+    //create new Review__c  
     @AuraEnabled
-    public static void createReview(String reviewName, Id keyResultId){ // create Review__c as a related field in KeyResult__c
+    public static void createReview(String reviewName, Id keyResultId){
         Review__c review = new Review__c(
             Name = reviewName,
             Key_Result__c = keyResultId
         );
         insert review;
     }
+    //create new GoogleReview__c
     @AuraEnabled
-    public static void createGoogleReview(String googleReviewName, Id keyResultId){ // create GoogleReview__c as a related field in KeyResult__c
+    public static void createGoogleReview(String googleReviewName, Id keyResultId){
         Google_Review__c googleReview = new Google_Review__c(
             Name = googleReviewName,
             Key_Result__c = keyResultId
         );
         insert googleReview;
     }
+    //create new Survey__c
     @AuraEnabled
-    public static void createSurvey(String surveyName, Id keyResultId){ // create GoogleReview__c as a related field in KeyResult__c
+    public static void createSurvey(String surveyName, Id keyResultId){
         Survey__c survey = new Survey__c(
             Name = surveyName,
             Key_Result__c = keyResultId
         );
         insert survey;
     }
+    //create new Case_Study__c
     @AuraEnabled
-    public static void createCaseStudy(String caseStudyName, Id keyResultId){ // create GoogleReview__c as a related field in KeyResult__c
+    public static void createCaseStudy(String caseStudyName, Id keyResultId){
         Case_Study__c caseStudy = new Case_Study__c(
             Name = caseStudyName,
             Key_Result__c = keyResultId
         );
         insert caseStudy;
     }
+    //delete operations
     public static void deleteKeyResult(Id keyResult){
         delete [SELECT Id FROM KeyResult__c WHERE Id =: keyResult];
     }
