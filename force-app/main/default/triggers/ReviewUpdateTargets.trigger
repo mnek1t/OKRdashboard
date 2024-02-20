@@ -1,4 +1,3 @@
-//update the Completed__c field in Targets when Review__c with some KeyResult id will be inserted, deleted or undeleted
 trigger ReviewUpdateTargets on Review__c (after insert, after delete, after undelete, after update) {
 
     Set<Id> targetsId = new Set<Id>();
@@ -17,9 +16,12 @@ trigger ReviewUpdateTargets on Review__c (after insert, after delete, after unde
     //loop in obtained collection of ids
     List<Target__c> targets = new List<Target__c>();
     for (Id targetId : targetsId) {
-        Target__c target = [SELECT Id, Completed__c FROM Target__c WHERE Key_Result__c = :targetId AND Name = 'Review'];
-        target.Completed__c = [SELECT COUNT() FROM Review__c WHERE Key_Result__c = :targetId];
-        targets.add(target);
+        List<Target__c> targetList = [SELECT Id, Completed__c FROM Target__c WHERE Key_Result__c = :targetId AND Name = 'Review'];
+        if(!targetList.isEmpty()) {
+            Target__c target = targetList[0];
+            target.Completed__c = [SELECT COUNT() FROM Review__c WHERE Key_Result__c = :targetId];
+            targets.add(target);
+        }
     }
     update targets;
 }

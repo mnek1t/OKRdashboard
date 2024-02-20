@@ -36,10 +36,6 @@ export default class KeyResultList extends LightningElement
 
     //retrive data about targets
     @track recievedTargets;
-    strOfTargets = ''; //string of target labels
-    strOfAmoutTarget = ''; //string of amount of targets
-    strOfContractTypes = '';
-    @track TARGETS//containt retrieved targets 
     //collection contains: key - option name, chosen in SetTargetWinodow and value - input
     @track dictionary = {
         'Opportunity': this.opportunityTarget,
@@ -63,46 +59,13 @@ export default class KeyResultList extends LightningElement
         try{
         this.recievedTargets = await getTargets({keyResultId: this.keyResultId});
         this.relatedFieldsOptions = RELATED_FIELD_OPTION.map(field=>({ label: field, value: field }));
-        console.log(JSON.stringify(this.recievedTargets))
-        //use data model approach
-        if(this.recievedTargets.length > 0)
+        if(this.recievedTargets.length > 0 && this.recievedTargets[0].ContractType__c)
         {
-            this.strOfTargets = this.recievedTargets[0].Name;
-            this.strOfAmoutTarget = this.recievedTargets[0].ToAchieve__c;
-            //this.recievedTargets[0].Completed__c = parseInt(await this.getAmountOfRelatedField(this.recievedTargets[0].Name));
-            //console.log('COmleted__c', this.recievedTargets[0].Completed__c);
-            //console.log(JSON.stringify(await this.getAmountOfRelatedField(this.recievedTargets[0].Name)))
-            //console.log('this.strOfTargets',this.strOfTargets)
-            //console.log('this.strOfAmoutTarget',this.strOfAmoutTarget)
-            this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: null});
-            //this.recievedTargets[0].Completed__c = parseInt(await this.getAmountOfRelatedField(this.recievedTargets[0].Name));
-            //console.log(JSON.stringify(await this.getAmountOfRelatedField(this.recievedTargets[0].Name)))
-            // if('ContractTypes__c' in this.recievedTargets[0])
-            // {
-            //     this.strOfContractTypes =  this.recievedTargets[0].ContractTypes__c;
-            //     this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: this.strOfContractTypes});
-            // }
-            // else this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: null});
-          
-            // let listOfTargets = this.strOfTargets.split(',');
-            // let listOfTargetsAmount = this.strOfAmoutTarget.split(' ');
-
-            // let targetWithAmount = {};
-            // for (let i = 0; i < listOfTargets.length; i++) {
-            //     targetWithAmount[listOfTargets[i]] = listOfTargetsAmount[i];
-            // }
-            // let sumofCompletedTargets = 0;
-            // this.TARGETS  = await Promise.all(Object.entries(targetWithAmount).map(async ([label, desiredAmount]) => {
-            //     let completedTarget = await this.getAmountOfRelatedField(label); 
-            //     sumofCompletedTargets = sumofCompletedTargets + parseInt(completedTarget);
-            //     return {targetLabel: label, completedTarget : completedTarget, desiredTarget: desiredAmount }
-            // }));
-            // let sumOfTargets = listOfTargetsAmount.map(Number).reduce((a,b) => a+b, 0);
-            // this.keyResults  = await updateKeyResultProgress({sumOfTargets:sumOfTargets, keyResults: this.keyResults, sumofCompletedTargets: sumofCompletedTargets});
+            console.log(this.recievedTargets[0].ContractType__c)
+            this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: this.recievedTargets[0].ContractType__c});
+            console.log(JSON.stringify(this.keyResults))
         }
-        else{
-            this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: null});
-        }
+        else this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType : null});
         }
         catch(error){
             console.log('load keyResults error: ',JSON.parse(error));
@@ -116,7 +79,6 @@ export default class KeyResultList extends LightningElement
             label: picklistValue, value: picklistValue
         }));
     }
-
     //handler for opening window with related fields
     handleSetTargetsWindow(event)
     {
@@ -129,41 +91,20 @@ export default class KeyResultList extends LightningElement
     @track completedTarget = [];
     async handleSetTargetFields(){
         this.showTargetWindow = false; 
-        let targetFromDictionary;
+        let targetFromDictionary = [];
         try {
             //current related fields
             await Promise.all (this.trackedFields.map(async field => {
-                this.strOfTargets = this.strOfTargets + field;
-                targetFromDictionary = this.dictionary[field] !==-1 ? this.dictionary[field] : 0;
-                this.strOfAmoutTarget = this.strOfAmoutTarget + targetFromDictionary + ' ';
+                targetFromDictionary.push(this.dictionary[field]);
+                const completedTargetValue = await this.getAmountOfRelatedField(field);
+                this.completedTarget.push(completedTargetValue); 
             }));
-            this.strOfTargets = this.strOfTargets.replace(/(?<=[a-z|\)])(?=[A-Z])/g, ',');
-            this.strOfAmoutTarget = this.strOfAmoutTarget.slice(0,-1);
-            if(this.strOfTargets.trim()){
-                const listOfTargets = this.strOfTargets.split(',');
-                const listOfTargetsAmount = this.strOfAmoutTarget.split(' ');
-                
-                let targetWithAmount = {};
-                for (let i = 0; i < listOfTargets.length; i++) {
-                    targetWithAmount[listOfTargets[i]] = listOfTargetsAmount[i];
-                }
-                this.TARGETS  = await Promise.all(Object.entries(targetWithAmount).map(async ([label, desiredAmount]) => {
-                    const completedTargetValue = await this.getAmountOfRelatedField(label);
-                    this.completedTarget.push(completedTargetValue); 
-                    return {targetLabel: label, completedTarget : this.completedTarget, desiredTarget: desiredAmount }
-                }));
-                console.log('completedTarget',JSON.stringify(listOfTargets))
-                console.log('completedTarget',JSON.stringify(this.completedTarget))
-                console.log('this.contracttype',this.contractType)
-                setTarget({targets: listOfTargets, amount : listOfTargetsAmount,completedTarget: this.completedTarget , keyResultId: this.keyResultId, contractType: this.contractType});
-            }
+            setTarget({targets: this.trackedFields, amount : targetFromDictionary,completedTarget: this.completedTarget , keyResultId: this.keyResultId, contractType: this.contractType});
             
         } catch (error) {
             console.log('handleSetTargetFields error: ', error.message);
         }
-        
     }
-
 
     //handler of checked boxes changes 
     handleSelectedTargetFieldOption(event){

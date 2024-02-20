@@ -1,20 +1,7 @@
 public with sharing class TargetsHandler {
     @AuraEnabled
-    public static void saveTargets(String targets, String amount, String keyResultId, String contractType){
-        try {
-            TargetSelection__c target = new TargetSelection__c();
-            target.Key_Result__c = (Id)keyResultId;
-            target.Targets__c = targets;
-            target.AmountTargets__c = amount;
-            target.ContractTypes__c = contractType;
-            insert target;
-        } catch (Exception e ) {
-            System.debug(e.getMessage());
-        }
-    }
-    @AuraEnabled
     public static List<Target__c> getTargets(id keyResultId){
-        return [SELECT Name,ToAchieve__c, Completed__c FROM Target__c WHERE Key_Result__c =: keyResultId ];
+        return [SELECT Name,ToAchieve__c, Completed__c, ContractType__c FROM Target__c WHERE Key_Result__c =: keyResultId ];
     }
     @AuraEnabled
     public static void setTarget(List<String> targets, List<String> amount,List<String> completedTarget , String keyResultId, String contractType){
@@ -28,6 +15,10 @@ public with sharing class TargetsHandler {
             );
             if(targetObject.Name == 'Contract')
             {
+                List<AggregateResult> contracts = [SELECT COUNT(Id) cnt FROM Contract WHERE Key_Result__c = :keyResultId AND Type__c =:contractType];
+                if (!contracts.isEmpty()) {
+                    targetObject.Completed__c = (Integer.valueOf(contracts[0].get('cnt')));
+                }
                 targetObject.ContractType__c = contractType;
             }
             targetsToInsert.add(targetObject);

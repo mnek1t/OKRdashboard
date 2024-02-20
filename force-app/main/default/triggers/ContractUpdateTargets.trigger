@@ -20,10 +20,13 @@ trigger ContractUpdateTargets on Contract (after insert, after delete, after und
     for (Id targetId : targetsId) {
         if(contractType!= '')
         {
-            List<Target__c> targetList = [SELECT Id, Completed__c FROM Target__c WHERE Key_Result__c = :targetId AND Name = 'Contract' AND ContractType__c =:contractType];
+            List<Target__c> targetList = [SELECT Id, Completed__c, ContractType__c FROM Target__c WHERE Key_Result__c = :targetId AND Name = 'Contract'];
             if (!targetList.isEmpty()) {
                 Target__c target = targetList[0];
-                target.Completed__c = [SELECT COUNT() FROM Contract WHERE Key_Result__c = :targetId];
+                List<AggregateResult> results = [SELECT COUNT(Id) cnt FROM Contract WHERE Key_Result__c = :targetId AND Type__c =:target.ContractType__c];
+                if (!results.isEmpty()) {
+                    target.Completed__c = (Integer.valueOf(results[0].get('cnt')));
+                }
                 targets.add(target);
             }
         }

@@ -15,9 +15,12 @@ trigger GoogleReviewUpdateTargets on Google_Review__c (after insert, after delet
     //loop in obtained collection of ids
     List<Target__c> targets = new List<Target__c>();
     for (Id targetId : targetsId) {
-        Target__c target = [SELECT Id, Completed__c FROM Target__c WHERE Key_Result__c = :targetId AND Name = 'Google Review'];
-        target.Completed__c = [SELECT COUNT() FROM Google_Review__c WHERE Key_Result__c = :targetId];
-        targets.add(target);
+        List<Target__c> targetList = [SELECT Id, Completed__c FROM Target__c WHERE Key_Result__c = :targetId AND Name = 'Google Review'];
+        if(!targetList.isEmpty()) {
+            Target__c target = targetList[0];
+            target.Completed__c = [SELECT COUNT() FROM Google_Review__c WHERE Key_Result__c = :targetId];
+            targets.add(target);
+        }
     }
     update targets;
 }

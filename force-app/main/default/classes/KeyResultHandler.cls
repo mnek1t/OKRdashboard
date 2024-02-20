@@ -24,21 +24,6 @@ public with sharing class KeyResultHandler {
     }
     @AuraEnabled(cacheable = true)
     public static List<KeyResult__c> getKeyResults(Id keyResultId, String contractType){ 
-        if(contractType == null){
-            return [SELECT Name, Progress__c,
-            (SELECT Name FROM Opportunities__r),
-            (SELECT WhatId FROM Events),
-            (SELECT Name FROM Calls__r),
-            (SELECT Name FROM Leads__r WHERE LeadSource = 'Web'),
-            (SELECT Name FROM Acts__r),
-            (SELECT Name FROM Google_Reviews__r),
-            (SELECT Name FROM Reviews__r),
-            (SELECT Name FROM Surveys__r),
-            (SELECT Name FROM Case_Studies__r),
-            (SELECT Id FROM Contracts__r)
-            FROM KeyResult__c WHERE Id =:keyResultId];
-        }
-        else{
             return [SELECT Name, Progress__c,
             (SELECT Name FROM Opportunities__r),
             (SELECT WhatId FROM Events),
@@ -50,14 +35,12 @@ public with sharing class KeyResultHandler {
             (SELECT Name FROM Surveys__r),
             (SELECT Name FROM Case_Studies__r),
             (SELECT Id FROM Contracts__r WHERE Type__c =: contractType)
-             FROM KeyResult__c WHERE Id =:keyResultId];
-        }
+            FROM KeyResult__c WHERE Id =:keyResultId];
     }
     private static List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
 
     @AuraEnabled(cacheable=true) // update Progress__c field for keyResult
     public static List<KeyResult__c> updateKeyResultProgress(Integer sumOfTargets,List<KeyResult__c> keyResults, Integer sumofCompletedTargets){
-        //List<KeyResult__c> keyResultsToUpdate = new List<KeyResult__c>();
         List<AggregateResult> results = [SELECT COUNT(Id) FROM KeyResult__c];
         for(KeyResult__c k: keyResults)
         {
