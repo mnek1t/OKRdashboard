@@ -93,12 +93,14 @@ export default class KeyResultList extends LightningElement
         try {
             //current related fields
             await Promise.all (this.trackedFields.map(async field => {
-                targetFromDictionary.push(this.dictionary[field]);
+                targetFromDictionary.push(this.dictionary[field]>0 ? this.dictionary[field] : 1);
                 const completedTargetValue = await this.getAmountOfRelatedField(field);
                 this.completedTarget.push(completedTargetValue); 
             }));
-            setTarget({targets: this.trackedFields, amount : targetFromDictionary,completedTarget: this.completedTarget , keyResultId: this.keyResultId, contractType: this.contractType});
-            
+            await setTarget({
+                targets: this.trackedFields, amount : targetFromDictionary, completedTarget: this.completedTarget, 
+                keyResultId: this.keyResultId, contractType: this.contractType});
+            this.recievedTargets = await getTargets({keyResultId: this.keyResultId});
         } catch (error) {
             console.log('handleSetTargetFields error: ', error.message);
         }
