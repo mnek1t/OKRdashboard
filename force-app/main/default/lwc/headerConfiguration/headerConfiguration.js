@@ -35,7 +35,7 @@ export default class HeaderConfiguration extends LightningElement
             this.assignedUserObjectivities = data.fields.Name.value;
         } 
         else {
-            console.log(error)
+            console.log(JSON.stringify(error))
         }
     }
     // auto launch the methods
@@ -52,7 +52,7 @@ export default class HeaderConfiguration extends LightningElement
             this.keyResultsRecords = result;
         }
         catch(error){
-            console.log('Error in loading keyResults', error)
+            console.log('Error in loading keyResults', JSON.stringify(error))
         }
     }
     //retrieve ten next years in the org to options for combobox
@@ -174,7 +174,7 @@ export default class HeaderConfiguration extends LightningElement
         } catch (error) {
             console.log('Error in creating a Survey',JSON.stringify(error))
         }
-        this.isCreateSurvey = false;
+        this.isCreateCaseStudy = false;
      }
 
     @track trackedFields = []

@@ -12,11 +12,11 @@ trigger ObjectivityHandlerTrigger on Objective__c (before insert)
         if(String.isBlank(objectivity.Name)){
             objectivity.Name.addError('Specify the name of objectivity');
         }
-        if(String.isBlank(objectivity.Owner__c)){
-            objectivity.Owner__c.addError('Specify the name of objectivity');
+        if(String.isBlank(objectivity.AssignedTo__c)){
+            objectivity.AssignedTo__c.addError('Specify the name of objectivity');
         }
-        System.debug(objectivity.Owner__c);
-        User u = [SELECT Email FROM User WHERE Id = :objectivity.Owner__c];
+        System.debug(objectivity.AssignedTo__c);
+        User u = [SELECT Email FROM User WHERE Id = :objectivity.AssignedTo__c];
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setToAddresses(new String[] {u.Email});
         mail.setSubject('New objectivity!');

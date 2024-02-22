@@ -14,10 +14,6 @@ export default class Okr extends LightningElement
     @track isAddingObjectivity = false; //show modal for creating new Objective__c
     @track isAddingKeyResult = false; //show modal for creating new KeyResult__c
 
-    //automatically called functions
-    // connectedCallback() {
-    //     this.loadOptions();
-    // }
     @wire(getObjectivitiesOptions)
     wiredData({error, data}){
         if (data) {
@@ -26,17 +22,6 @@ export default class Okr extends LightningElement
             console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
         }
     }
-    //retrieve all objectives in the org
-    // async loadOptions(){
-    //     try{
-    //     let result = await getObjectivitiesOptions();
-    //     this.objectivityOptions = result;
-    //     }
-    //     catch(error){
-    //         console.log('Erorr')
-    //         console.log(error.message)
-    //     }
-    // }
     //show modals handler
     handleOpening(event){
         if(event.target.value == 'close'){

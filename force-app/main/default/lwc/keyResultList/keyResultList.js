@@ -1,10 +1,9 @@
 import { LightningElement,api,track,wire } from 'lwc';
 //apex methods
 import getKeyResults from '@salesforce/apex/KeyResultHandler.getKeyResults';
-import updateKeyResultProgress from '@salesforce/apex/KeyResultHandler.updateKeyResultProgress'
 import getContractTypes from '@salesforce/apex/ContractsHandler.getContractTypes';
-import saveTargets from '@salesforce/apex/TargetsHandler.saveTargets';
 import getTargets from '@salesforce/apex/TargetsHandler.getTargets';
+import setTarget from '@salesforce/apex/TargetsHandler.setTarget';
 
 const RELATED_FIELD_OPTION = ['Opportunity', 'Google Review', 'Review', 'Case Study', 'Act', 'Survey', 'Call','Event', 'Leads (Web)','Contract']
 export default class KeyResultList extends LightningElement 
@@ -14,7 +13,6 @@ export default class KeyResultList extends LightningElement
     @track keyResults; //contains all keyresult
     @track showTargetWindow=false; // open SetTarget Window
     @track relatedFieldsOptions; // array store all related fields 
-    @track targets; // contain key-value pair: RelatedObj-amout of these objects conneted with one keyResult
     //retrive data in field from user input
     opportunityTarget = -1;
     reviewTarget = -1;
@@ -26,7 +24,6 @@ export default class KeyResultList extends LightningElement
     leadTarget = -1;
     eventTarget = -1;
     contractTarget = -1
-    //@track savedTargets; // download from localStorage 
     
     //particular for case when Contract is checked as a Target 
     @track showPicklist = false;
@@ -35,12 +32,8 @@ export default class KeyResultList extends LightningElement
     @track targetedFields=[];
     @track targetedFieldsWithContracts = [];
 
-    //поля хранят в себе 
+    //retrive data about targets
     @track recievedTargets;
-    strOfTargets = ''; //строка имен таргетов выбранных пользователем
-    strOfAmoutTarget = ''; // строка чисел - количества выбраных таргетов
-    strOfContractTypes = '';
-    @track TARGETS//сюда записую таргетв по новому способу
     //collection contains: key - option name, chosen in SetTargetWinodow and value - input
     @track dictionary = {
         'Opportunity': this.opportunityTarget,
@@ -56,60 +49,21 @@ export default class KeyResultList extends LightningElement
     }
     //autolaunched methods
     connectedCallback(){
-       let result = JSON.parse(localStorage.getItem(this.keyResultId));
-       this.loadKeyResults(result);
+       this.loadKeyResults();
        this.loadPicklist();
     }
     //get keyResult by its id and get all options for checkboxgroup
-    async loadKeyResults(result){
+    async loadKeyResults(){
         try{
         this.recievedTargets = await getTargets({keyResultId: this.keyResultId});
         this.relatedFieldsOptions = RELATED_FIELD_OPTION.map(field=>({ label: field, value: field }));
-        //use data model approach
-        if(this.recievedTargets.length > 0)
+        if(this.recievedTargets.length > 0 && this.recievedTargets[0].ContractType__c)
         {
-            this.strOfTargets = this.recievedTargets[0].Targets__c;
-            this.strOfAmoutTarget = this.recievedTargets[0].AmountTargets__c;
-            if('ContractTypes__c' in this.recievedTargets[0])
-            {
-                this.strOfContractTypes =  this.recievedTargets[0].ContractTypes__c;
-                this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: this.strOfContractTypes});
-            }
-            else this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: null});
-          
-            let listOfTargets = this.strOfTargets.split(',');
-            let listOfTargetsAmount = this.strOfAmoutTarget.split(' ');
-
-            let targetWithAmount = {};
-            for (let i = 0; i < listOfTargets.length; i++) {
-                targetWithAmount[listOfTargets[i]] = listOfTargetsAmount[i];
-            }
-            let sumofCompletedTargets = 0;
-            this.TARGETS  = await Promise.all(Object.entries(targetWithAmount).map(async ([label, desiredAmount]) => {
-                let completedTarget = await this.getAmountOfRelatedField(label); 
-                sumofCompletedTargets = sumofCompletedTargets + parseInt(completedTarget);
-                return {targetLabel: label, completedTarget : completedTarget, desiredTarget: desiredAmount }
-            }));
-            //console.log('TARGETS', JSON.stringify(this.TARGETS));
-            let sumOfTargets = listOfTargetsAmount.map(Number).reduce((a,b) => a+b, 0);
-            //console.log('sumOfTargets',sumOfTargets);
-            console.log('strOfContractTypes', this.strOfContractTypes);
-            this.keyResults  = await updateKeyResultProgress({sumOfTargets:sumOfTargets, keyResults: this.keyResults, sumofCompletedTargets: sumofCompletedTargets});
+            console.log(this.recievedTargets[0].ContractType__c)
+            this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: this.recievedTargets[0].ContractType__c});
+            console.log(JSON.stringify(this.keyResults))
         }
-        // let sumOfTargets = 0;
-        // let listOfTargets = [];
-        // let sumofCompletedTargets = 0;
-        // if(result!==null){
-        //     this.savedTargets = await Promise.all (result.map(async item => {
-        //         let value = await this.getAmountOfRelatedField(item.label);
-        //         sumOfTargets = sumOfTargets + parseInt(item.setTarget);
-        //         listOfTargets.push(item.label.toString());
-        //         sumofCompletedTargets = sumofCompletedTargets + value; 
-        //         return {label: item.label, value: value, setTarget: item.setTarget, contractType: item.contractType};
-        //    }))
-        //    //TODO: take off the comment in method to update progress for obj, not only in lwc and change the callout of method to avoid DML limit
-        //     this.keyResults  = await updateKeyResultProgress({sumOfTargets:sumOfTargets, keyResults: this.keyResults, sumofCompletedTargets: sumofCompletedTargets});
-        // }
+        else this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType : null});
         }
         catch(error){
             console.log('load keyResults error: ',JSON.parse(error));
@@ -123,7 +77,6 @@ export default class KeyResultList extends LightningElement
             label: picklistValue, value: picklistValue
         }));
     }
-
     //handler for opening window with related fields
     handleSetTargetsWindow(event)
     {
@@ -132,31 +85,25 @@ export default class KeyResultList extends LightningElement
         else
             this.showTargetWindow = false;
     }
-    //hadler of Set button that will 'subscribe' on fields that need to be tracked to complete Key result
+    //handler of Set button that will 'subscribe' on fields that need to be tracked to complete Key result
+    @track completedTarget = [];
     async handleSetTargetFields(){
         this.showTargetWindow = false; 
-        let value; let targetFromDictionary; let isContract = false;
+        let targetFromDictionary = [];
         try {
             //current related fields
-            this.targets = await Promise.all (this.trackedFields.map(async field => {
-                value = await this.getAmountOfRelatedField(field);
-                this.strOfTargets = this.strOfTargets + field;
-                targetFromDictionary = this.dictionary[field] !==-1 ? this.dictionary[field] : 0;
-                this.strOfAmoutTarget = this.strOfAmoutTarget + targetFromDictionary + ' ';
-                return {label: field, value: value, setTarget: targetFromDictionary,contractType: this.contractType};
+            await Promise.all (this.trackedFields.map(async field => {
+                targetFromDictionary.push(this.dictionary[field]>0 ? this.dictionary[field] : 1);
+                const completedTargetValue = await this.getAmountOfRelatedField(field);
+                this.completedTarget.push(completedTargetValue); 
             }));
-            this.strOfTargets = this.strOfTargets.replace(/(?<=[a-z|\)])(?=[A-Z])/g, ',');
-            this.strOfAmoutTarget = this.strOfAmoutTarget.slice(0,-1);
-            //console.log('this.contractType', this.contractType)
-            // console.log('String of targets: ', this.strOfTargets);
-            // console.log('String of amount targets: ', this.strOfAmoutTarget);
-            // console.log('this.keyResultId',this.keyResultId.toString());
-
-            saveTargets({targets: this.strOfTargets, amount : this.strOfAmoutTarget, keyResultId: this.keyResultId, contractType: this.contractType});
+            await setTarget({
+                targets: this.trackedFields, amount : targetFromDictionary, completedTarget: this.completedTarget, 
+                keyResultId: this.keyResultId, contractType: this.contractType});
+            this.recievedTargets = await getTargets({keyResultId: this.keyResultId});
         } catch (error) {
             console.log('handleSetTargetFields error: ', error.message);
         }
-        
     }
 
     //handler of checked boxes changes 
