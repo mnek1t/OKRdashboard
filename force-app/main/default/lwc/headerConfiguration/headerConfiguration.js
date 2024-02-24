@@ -3,12 +3,17 @@ import { getRecord } from 'lightning/uiRecordApi';
 import USER_NAME from '@salesforce/schema/User.Name';
 import USER_ID from '@salesforce/user/Id';
 //apex methods
+import createObjective from '@salesforce/apex/ObjectivesHandler.createObjective';
+import createKeyResult from '@salesforce/apex/KeyResultHandler.createKeyResult';
+import getObjectivitiesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptions';
 import getUsers from '@salesforce/apex/UserHandler.getUsers'; //returns all users in the org
 import getKeyRecordsOptions from '@salesforce/apex/KeyResultHandler.getKeyRecordsOptions';
 import createReview from '@salesforce/apex/KeyResultHandler.createReview'; // creates a record for Review__c object
 import createGoogleReview from '@salesforce/apex/KeyResultHandler.createGoogleReview';
 import createSurvey from '@salesforce/apex/KeyResultHandler.createSurvey';
 import createCaseStudy from '@salesforce/apex/KeyResultHandler.createCaseStudy';
+
+import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 
 export default class HeaderConfiguration extends LightningElement 
 {
@@ -28,6 +33,10 @@ export default class HeaderConfiguration extends LightningElement
     @track isCreateGoogleReview = false;
     @track isCreateSurvey = false;
     @track isCreateCaseStudy = false;
+    @track isCreateObjective = false;
+    @track isCreateKeyResult = false;
+
+    @track objectivityOptions = []; 
     //automatically get user id that is chosen from combobox
     @wire(getRecord,{recordId: '$userId',fields:[USER_NAME]})
     wiredUser({ error, data }) {
@@ -36,6 +45,14 @@ export default class HeaderConfiguration extends LightningElement
         } 
         else {
             console.log(JSON.stringify(error))
+        }
+    }
+    @wire(getObjectivitiesOptions)
+    wiredData({error, data}){
+        if (data) {
+            this.objectivityOptions = data;   
+        } else if (error) {
+            console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
         }
     }
     // auto launch the methods
@@ -68,7 +85,7 @@ export default class HeaderConfiguration extends LightningElement
     }
     //retrive all activity buttons
     loadButtons(){
-        let buttons = ['New review', 'New survey', 'New case study', 'New google review']
+        const buttons = ['New objective','New key result','New review', 'New survey', 'New case study', 'New google review']
         for(let i = 0; i < buttons.length ;i++)
         {
             this.activityButtons.push({label:`${buttons[i]}`,value:`${buttons[i]}`})
@@ -87,6 +104,12 @@ export default class HeaderConfiguration extends LightningElement
     handleOpeningCreatingCaseStudy(){
         this.isCreateCaseStudy = false;
     }
+    handleOpeningCreatingObjecive(){
+        this.isCreateObjective = false;
+    }
+    handleOpeningCreatingKeyResult(){
+        this.isCreateKeyResult = false;
+    }
     // handle a choice from checkbox of buttons to provide some activity
     provideActivity(event){
         if(event.detail.value == 'New review'){
@@ -101,6 +124,12 @@ export default class HeaderConfiguration extends LightningElement
         if(event.detail.value == 'New case study'){
             this.isCreateCaseStudy = true; 
         }
+        if(event.detail.value == 'New objective'){
+            this.isCreateObjective = true; 
+        }
+        if(event.detail.value == 'New key result'){
+            this.isCreateKeyResult = true; 
+        }
         this.action = event.detail.value;      
     }
     //handle the changes in user combobox
@@ -111,11 +140,69 @@ export default class HeaderConfiguration extends LightningElement
     switchYearObjectivities(event){
         this.objectivityYear = event.detail.value;
     }
-    //handlers ro submit data to apex method to reate related objects record for Key_Result__c
-    async handleSubmitReview(){
+    async handleSubmitObjective(){
         this.formData = [];
         for(let prop in this.refs){
             this.formData[prop] = this.refs[prop].value
+            console.log(this.formData[prop])
+        }
+        try{
+            await createObjective({
+                objName: this.formData['objectiveName'], 
+                description: this.formData['description'], 
+                startDate: this.formData['startDate'], 
+                endDate: this.formData['endDate'],  
+                userIdAssigned: this.formData['userId'] 
+            })
+            this.isCreateObjective = false;  
+            console.log('Record is created')
+        }
+        catch(error)
+        {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error creating record',
+                    message: error.message,
+                    variant: 'error',
+                }),
+            );
+            console.log(JSON.stringify(error));
+        }
+    }
+    async handleSubmitKeyResult(){
+        this.formData = [];
+        for(let prop in this.refs){
+            this.formData[prop] = this.refs[prop].value;
+            console.log(this.formData[prop])
+        }
+        try{
+            console.log(typeof(this.formData['keyResultName']));
+            console.log(typeof(this.formData['objectivityId']))
+            await createKeyResult({
+                keyResultName: this.formData['keyResultName'],
+                objectivityId: this.formData['objectivityId']
+            })
+            this.isCreateKeyResult = false;  
+            console.log('Record is created')
+        }
+        catch(error)
+        {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error creating record',
+                    message: error.message,
+                    variant: 'error',
+                }),
+            );
+            console.log(JSON.stringify(error));
+        }
+    }
+    //handlers to submit data to apex method to reate related objects record for Key_Result__c
+    async handleSubmitReview(){
+        this.formData = [];
+        for(let prop in this.refs){
+            this.formData[prop] = this.refs[prop].value;
+            
         }
         try {
             await createReview({

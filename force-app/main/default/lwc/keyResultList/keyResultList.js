@@ -59,9 +59,7 @@ export default class KeyResultList extends LightningElement
         this.relatedFieldsOptions = RELATED_FIELD_OPTION.map(field=>({ label: field, value: field }));
         if(this.recievedTargets.length > 0 && this.recievedTargets[0].ContractType__c)
         {
-            console.log(this.recievedTargets[0].ContractType__c)
             this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType: this.recievedTargets[0].ContractType__c});
-            console.log(JSON.stringify(this.keyResults))
         }
         else this.keyResults = await getKeyResults({keyResultId: this.keyResultId, contractType : null});
         }

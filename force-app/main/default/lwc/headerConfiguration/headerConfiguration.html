@@ -1,3 +1,5 @@
+<!-- sldsValidatorIgnore -->
+<!-- sldsValidatorIgnore -->
 <template>
     <lightning-card title="OKR Dashboard" icon-name="utility:advertising">
         <div>
@@ -10,8 +12,7 @@
             <div class="right">
                 <lightning-combobox placeholder="Select User" value="user" options={userOptions}  onchange={switchUserObjectivities} ></lightning-combobox>
                 <lightning-combobox placeholder="Select Year" value="year" options={yearOptions} onchange={switchYearObjectivities}></lightning-combobox>
-                <lightning-combobox placeholder="" options={activityButtons} onchange={provideActivity}></lightning-combobox>
-                <c-okr user-options={userOptions} onfetchtrackfields={getTrackFields}></c-okr>               
+                <lightning-combobox placeholder="" options={activityButtons} onchange={provideActivity} dropdown-alignment="auto"></lightning-combobox>             
             </div> 
         </div>
         <template if:true={userId}>
@@ -26,7 +27,7 @@
                 <header class="slds-modal__header">
                     <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add Review</h2>
                 </header>
-                <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-1" style="height: 200px;">
+                <div class="slds-modal__content slds-var-p-around_small modal" id="modal-content-id-1">
                         <lightning-input label="Review Name" lwc:ref="reviewName"></lightning-input>
                         <lightning-combobox label="Key Result" options={keyResultsRecords} lwc:ref="keyResult"></lightning-combobox>
                 </div>
@@ -43,7 +44,7 @@
                 <header class="slds-modal__header">
                     <h2 id="modal-heading-02" class="slds-modal__title slds-hyphenate">Add Google Review</h2>
                 </header>
-                <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-2" style="height: 200px;">
+                <div class="slds-modal__content slds-var-p-around_small modal" id="modal-content-id-2">
                         <lightning-input label="Google Review Name" lwc:ref="googleReviewName"></lightning-input>
                         <lightning-combobox label="Key Result" options={keyResultsRecords} lwc:ref="keyResult"></lightning-combobox>
                 </div>
@@ -60,7 +61,7 @@
                 <header class="slds-modal__header">
                     <h2 id="modal-heading-03" class="slds-modal__title slds-hyphenate">Add Survey</h2>
                 </header>
-                <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-3" style="height: 200px;">
+                <div class="slds-modal__content slds-var-p-around_small modal" id="modal-content-id-3">
                         <lightning-input label="Survey Name" lwc:ref="surveyName"></lightning-input>
                         <lightning-combobox label="Key Result" options={keyResultsRecords} lwc:ref="keyResult"></lightning-combobox>
                 </div>
@@ -77,13 +78,50 @@
                 <header class="slds-modal__header">
                     <h2 id="modal-heading-04" class="slds-modal__title slds-hyphenate">Add Case Study</h2>
                 </header>
-                <div class="slds-modal__content slds-var-p-around_small" id="modal-content-id-4" style="height: 200px;">
+                <div class="slds-modal__content slds-var-p-around_small modal" id="modal-content-id-4">
                         <lightning-input label="Case Study Name" lwc:ref="caseStudyName"></lightning-input>
                         <lightning-combobox label="Key Result" options={keyResultsRecords} lwc:ref="keyResult"></lightning-combobox>
                 </div>
                 <footer class="slds-modal__footer">
                     <lightning-button class="slds-button_neutral" label="Close" value="close" onclick={handleOpeningCreatingCaseStudy}>Close</lightning-button>
                     <button class="slds-button slds-button_brand" onclick={handleSubmitCaseStudy}>Create</button>
+                </footer>
+            </section>
+        </div>
+    </template>
+    <template if:true={isCreateObjective}>
+        <div class="slds-backdrop slds-backdrop_open">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal__container slds-fade-in-open">
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading-05" class="slds-modal__title slds-hyphenate">Add Objective</h2>
+                </header>
+                <div class="slds-modal__content slds-var-p-around_small modal" id="modal-content-id-5">
+                        <lightning-input label="Objectivity Name" lwc:ref="objectiveName"></lightning-input>
+                        <lightning-textarea label="Description" lwc:ref="description"></lightning-textarea>
+                        <lightning-input type="date" label="Start Date" lwc:ref="startDate"></lightning-input>
+                        <lightning-input type="date" label="End Date" lwc:ref="endDate"></lightning-input>
+                        <lightning-combobox label="User" options={userOptions} lwc:ref="userId"></lightning-combobox>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button class="slds-button_neutral" label="Close" value="close" onclick={handleOpeningCreatingObjecive}></lightning-button>
+                    <button id='addObj' class="slds-button slds-button_brand" onclick={handleSubmitObjective}>Create</button>
+                </footer>
+            </section>
+        </div>
+    </template>
+    <template if:true={isCreateKeyResult}>
+        <div class="slds-backdrop slds-backdrop_open">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal__container slds-fade-in-open">
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading-06" class="slds-modal__title slds-hyphenate">Add Key Result</h2>
+                </header>
+                <div class="slds-modal__content slds-var-p-around_small modal" id="modal-content-id-6">
+                    <lightning-input label="Key Result Name" lwc:ref="keyResultName"></lightning-input>
+                    <lightning-combobox label="Objectivity" value={Name} options={objectivityOptions} lwc:ref="objectivityId"></lightning-combobox>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button class="slds-button_neutral" label="Close" value="close" onclick={handleOpeningCreatingKeyResult}></lightning-button>
+                    <button class="slds-button slds-button_brand" value="key"  onclick={handleSubmitKeyResult}>Create Key</button>
                 </footer>
             </section>
         </div>

@@ -2,11 +2,11 @@
     <template if:true={objectivities}>
         <template for:each={objectivities} for:item="objectivity">
             <div key={objectivity.Id} class="slds-border_top">
-                <div style="display: flex; align-items: flex-start;">
+                <div style="display: grid; grid-template-columns: 1fr 10fr; gap: 20px;">
                     <div>
                         <lightning-card title={objectivity.Name}></lightning-card>
                     </div>
-                    <div style="width: 800px; display:flex; flex:1" >
+                    <div style="margin-left: 20px; width: 800px; display:flex; flex:1" >
                         <template for:each={objectivity.Key_Results__r} for:item="keyResult">
                             <div key={keyResult.Id} class="slds-var-m-around_xx-small">                      
                                 <c-key-result-list tracked-fields={trackedFields} key-result-id={keyResult.Id}></c-key-result-list>
@@ -17,5 +17,5 @@
             </div>
         </template>
     </template>
-    
 </template>
+
