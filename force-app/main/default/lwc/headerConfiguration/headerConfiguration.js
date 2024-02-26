@@ -82,7 +82,7 @@ export default class HeaderConfiguration extends LightningElement
     }
     refreshKeyResult() {
         refreshApex(this.wiredKeyResults);
-        this.template.querySelector('c-objectvity-list').refreshKeyResult();
+        //this.template.querySelector('c-objectvity-list').refreshKeyResult();
     }
     // auto launch the methods
     connectedCallback() {

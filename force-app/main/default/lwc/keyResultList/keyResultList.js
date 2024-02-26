@@ -52,6 +52,17 @@ export default class KeyResultList extends LightningElement
        this.loadKeyResults();
        this.loadPicklist();
     }
+    wiredKeyResults
+    @wire(getKeyResults,{keyResultId: '$keyResultId', contractType: 'recievedTargets[0].ContractType__c'})
+    wiredKeyResult(value){
+        this.wiredKeyResults = value;
+        const { error, data } = value;
+        if (data) {
+            this.keyResults = data;   
+        } else if (error) {
+            console.log('getKeyRecordsOptions error: ', JSON.stringify(error))
+        }
+    }
     //get keyResult by its id and get all options for checkboxgroup
     async loadKeyResults(){
         try{
