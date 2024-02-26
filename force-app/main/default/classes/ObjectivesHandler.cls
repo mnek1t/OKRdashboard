@@ -16,7 +16,7 @@ public with sharing class ObjectivesHandler
     }
     //get Objective__c name with Objective__c Id to provide a selection in LWC
     @AuraEnabled(cacheable=true)
-    public static List<Map<String,String>> getObjectivitiesOptions(){
+    public static List<Map<String,String>> getObjectivesOptions(){
         List<Map<String,String>> objectivityOptions = new List<Map<String,String>>();
         for(Objective__c objectivity :[SELECT Id, Name FROM Objective__c]){
             Map<String,String> option = new Map<String,String>{
@@ -30,7 +30,7 @@ public with sharing class ObjectivesHandler
     }
     //get Objective__c in accordance with user and year for that Objective__c was assigned for
     @AuraEnabled(cacheable=true)
-    public static List<Objective__c> getObjectivitiesOptionsAccordingUser(String user, String year){
+    public static List<Objective__c> getObjectivesAccordingUser(String user, String year){
         List<Objective__c> objectives  = 
             [SELECT Id, Name,(SELECT Id,Name,Progress__c FROM Key_Results__r) FROM Objective__c 
             WHERE AssignedTo__c =: (Id)user AND CALENDAR_YEAR(Start_date__c) <=: Integer.valueOf(year) AND CALENDAR_YEAR(End_date__c) >=: Integer.valueOf(year)];

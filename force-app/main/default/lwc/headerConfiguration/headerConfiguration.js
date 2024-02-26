@@ -1,11 +1,12 @@
 import { LightningElement, api, track,wire} from 'lwc';
 import { getRecord } from 'lightning/uiRecordApi';
+import { refreshApex } from '@salesforce/apex';
 import USER_NAME from '@salesforce/schema/User.Name';
 import USER_ID from '@salesforce/user/Id';
 //apex methods
 import createObjective from '@salesforce/apex/ObjectivesHandler.createObjective';
 import createKeyResult from '@salesforce/apex/KeyResultHandler.createKeyResult';
-import getObjectivitiesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptions';
+import getObjectivesOptions from '@salesforce/apex/ObjectivesHandler.getObjectivesOptions';
 import getUsers from '@salesforce/apex/UserHandler.getUsers'; //returns all users in the org
 import getKeyRecordsOptions from '@salesforce/apex/KeyResultHandler.getKeyRecordsOptions';
 import createReview from '@salesforce/apex/KeyResultHandler.createReview'; // creates a record for Review__c object
@@ -21,25 +22,29 @@ export default class HeaderConfiguration extends LightningElement
     @track objectivityYear = new Date().getFullYear(); //variable that takes the year
     @track assignedUserObjectivities; //contain user id that is chosen from combobox
 
-    @track userOptions= []; //options for combobox to dispaly assigned objectives to chosen user
-    @track yearOptions= []; //options for combobx to display assigned objectives with corresponig year
+    @track userOptions = []; //options for combobox to dispaly assigned objectives to chosen user
+    @track yearOptions = []; //options for combobx to display assigned objectives with corresponig year
     @track activityButtons = []; //options for combobx to display buttons that can create objective, keyresult and so on.
 
     @track action;
     @track keyResultsRecords; //upload all keyResults records to assign them to related fields
     @track formData = []; // array that contain parameters to fetch to apex method to create a related field
     //show templates modal
-    @track isCreateReview = false;
-    @track isCreateGoogleReview = false;
-    @track isCreateSurvey = false;
-    @track isCreateCaseStudy = false;
-    @track isCreateObjective = false;
-    @track isCreateKeyResult = false;
+    isCreateReview = false;
+    isCreateGoogleReview = false;
+    isCreateSurvey = false;
+    isCreateCaseStudy = false;
+    isCreateObjective = false;
+    isCreateKeyResult = false;
 
-    @track objectivityOptions = []; 
+    @track objectivesOptions = []; 
+
+    
     //automatically get user id that is chosen from combobox
     @wire(getRecord,{recordId: '$userId',fields:[USER_NAME]})
-    wiredUser({ error, data }) {
+    wiredUser(value) {
+        //this.wiredActivities = value;
+        const { error, data } = value;
         if (data) {
             this.assignedUserObjectivities = data.fields.Name.value;
         } 
@@ -47,30 +52,43 @@ export default class HeaderConfiguration extends LightningElement
             console.log(JSON.stringify(error))
         }
     }
-    @wire(getObjectivitiesOptions)
-    wiredData({error, data}){
+    //automatically get objectives that is chosen from combobox
+    wiredObjectives; //track the provisioned value
+    @wire(getObjectivesOptions)
+    wiredObjective(value){
+        this.wiredObjectives = value;
+        const { error, data } = value;
         if (data) {
-            this.objectivityOptions = data;   
+            this.objectivesOptions = data;   
         } else if (error) {
             console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
         }
+    }
+    //automatically get Key Results that is chosen from combobox
+    wiredKeyResults; //track the provisioned value
+    @wire(getKeyRecordsOptions)
+    wiredKeyResult(value){
+        this.wiredKeyResults = value;
+        const { error, data } = value;
+        if (data) {
+            this.keyResultsRecords = data;   
+        } else if (error) {
+            console.log('getKeyRecordsOptions error: ', JSON.stringify(error))
+        }
+    }
+    refreshObjective() {
+        refreshApex(this.wiredObjectives);
+        this.template.querySelector('c-objectvity-list').refreshData();
+    }
+    refreshKeyResult() {
+        refreshApex(this.wiredKeyResults);
+        this.template.querySelector('c-objectvity-list').refreshKeyResult();
     }
     // auto launch the methods
     connectedCallback() {
         this.loadUserOptions(); 
         this.getNextTenYears();
         this.loadButtons();
-        this.loadKeyRecords();
-    }
-    //load keyResult records
-    async loadKeyRecords(){
-        try{
-            let result = await getKeyRecordsOptions();
-            this.keyResultsRecords = result;
-        }
-        catch(error){
-            console.log('Error in loading keyResults', JSON.stringify(error))
-        }
     }
     //retrieve ten next years in the org to options for combobox
     getNextTenYears(){
@@ -144,7 +162,6 @@ export default class HeaderConfiguration extends LightningElement
         this.formData = [];
         for(let prop in this.refs){
             this.formData[prop] = this.refs[prop].value
-            console.log(this.formData[prop])
         }
         try{
             await createObjective({
@@ -156,6 +173,7 @@ export default class HeaderConfiguration extends LightningElement
             })
             this.isCreateObjective = false;  
             console.log('Record is created')
+            this.refreshObjective();
         }
         catch(error)
         {
@@ -169,21 +187,20 @@ export default class HeaderConfiguration extends LightningElement
             console.log(JSON.stringify(error));
         }
     }
+    //handler for a creating a new record in Salesforce
     async handleSubmitKeyResult(){
         this.formData = [];
         for(let prop in this.refs){
             this.formData[prop] = this.refs[prop].value;
-            console.log(this.formData[prop])
         }
         try{
-            console.log(typeof(this.formData['keyResultName']));
-            console.log(typeof(this.formData['objectivityId']))
             await createKeyResult({
                 keyResultName: this.formData['keyResultName'],
                 objectivityId: this.formData['objectivityId']
             })
             this.isCreateKeyResult = false;  
-            console.log('Record is created')
+            console.log('Record is created');
+            this.refreshKeyResult();
         }
         catch(error)
         {
@@ -268,4 +285,5 @@ export default class HeaderConfiguration extends LightningElement
     getTrackFields(event){
         this.trackedFields = event.detail;
     }
+    
 }

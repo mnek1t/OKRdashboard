@@ -1,20 +1,55 @@
 import { LightningElement,wire,track,api } from 'lwc';
+import { refreshApex } from '@salesforce/apex';
 //apex methods
-import getObjectivitiesOptionsAccordingUser from '@salesforce/apex/ObjectivesHandler.getObjectivitiesOptionsAccordingUser';
+import getObjectivesAccordingUser from '@salesforce/apex/ObjectivesHandler.getObjectivesAccordingUser';
+
+//delete
+import getTargets from '@salesforce/apex/TargetsHandler.getTargets';
 export default class ObjectvityList extends LightningElement 
 {
     @api userId; // get userId from headerConfiguration component to display objectives only assigned to this user
     @api year; // get year from headerConfiguration component to display objectives only assigned to this year and further, (not past)
     @api trackedFields; // TODO write a commeent
     @track objectivities; // contain a list of objectives
-    
+
+    wiredObjectives; //track the provisioned value
+
     //automatically retirieve objective in accordance to particaular userId and specified year
-    @wire(getObjectivitiesOptionsAccordingUser, {user: '$userId', year: '$year'})
-    wiredData({error, data}){
+    @wire(getObjectivesAccordingUser, {user: '$userId', year: '$year'})
+    wiredData(value){
+        this.wiredObjectives = value;
+        const {error, data} = value;
         if (data) {
             this.objectivities = data;   
         } else if (error) {
-            console.log('getObjectivitiesOptionsAccordingUser error: ', JSON.stringify(error))
+            console.log('getObjectivesAccordingUser error: ', JSON.stringify(error))
         }
     }
+    //delete it
+    // @track recievedTargets;
+    // @wire(getTargets, {keyResultId:'$keyResultId'})
+    // wiredTargets(value)
+    // {
+    //     this.wiredTargets = value;
+    //     const {error, data} = value;
+    //     if (data) {
+    //         console.log('this.keyResultId from wire', this.keyResultId)
+    //         this.recievedTargets = data;  
+    //     } else if (error) {
+    //         console.log('getTargets error: ', JSON.stringify(error))
+    //     }
+    // }
+    @api 
+    refreshData()
+    {
+        refreshApex(this.wiredObjectives);
+    }
+
+    // @api
+    // refreshKeyResult()
+    // {
+    //     console.log('refreshKeyResult from objectivityList')
+    //     console.log(this.template.querySelector('c-key-result-list'));
+    //     this.template.querySelector('c-key-result-list').refreshKeyResult();
+    // }
 }
