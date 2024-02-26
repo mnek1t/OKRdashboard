@@ -39,7 +39,6 @@ export default class HeaderConfiguration extends LightningElement
 
     @track objectivesOptions = []; 
 
-    
     //automatically get user id that is chosen from combobox
     @wire(getRecord,{recordId: '$userId',fields:[USER_NAME]})
     wiredUser(value) {
@@ -82,7 +81,7 @@ export default class HeaderConfiguration extends LightningElement
     }
     refreshKeyResult() {
         refreshApex(this.wiredKeyResults);
-        //this.template.querySelector('c-objectvity-list').refreshKeyResult();
+        this.template.querySelector('c-objectvity-list').refreshData();
     }
     // auto launch the methods
     connectedCallback() {
@@ -280,10 +279,8 @@ export default class HeaderConfiguration extends LightningElement
         }
         this.isCreateCaseStudy = false;
      }
-
-    @track trackedFields = []
+    @track trackedFields = [];
     getTrackFields(event){
         this.trackedFields = event.detail;
     }
-    
 }
